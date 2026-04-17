@@ -20,21 +20,6 @@ else
     fi
 fi
 
-echo "==> Checking for ffmpeg..."
-
-if command -v ffmpeg &>/dev/null; then
-    echo "    ffmpeg already installed: $(ffmpeg -version 2>&1 | head -1)"
-else
-    echo "    ffmpeg not found — installing via apt..."
-    if command -v apt &>/dev/null; then
-        sudo apt update -qq && sudo apt install -y ffmpeg
-        echo "    ffmpeg installed: $(ffmpeg -version 2>&1 | head -1)"
-    else
-        echo "[error] apt not available. Install ffmpeg manually: https://ffmpeg.org/download.html"
-        exit 1
-    fi
-fi
-
 echo "==> Syncing project dependencies..."
 uv sync
 
