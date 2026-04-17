@@ -1,3 +1,5 @@
+import os
+
 import typer
 
 from src.video_caption.clients.minio_client import MinIOClient
@@ -8,7 +10,7 @@ from src.video_caption.logger import get_logger, setup_logging
 setup_logging()
 log = get_logger("video_caption.main")
 
-_VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".flv", ".m4v"}
+_VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".flv", ".m4v", ".ts"}
 
 app = typer.Typer(help="Video caption assistant — transcribe, translate, and export captions.")
 
@@ -93,7 +95,8 @@ def _check_lm_studio(base_url: str) -> bool:
     url = f"{base_url.rstrip('/')}/models"
     log.debug("Checking LM Studio at %s", url)
     try:
-        r = httpx.get(url, timeout=5)
+        headers = {"Authorization": f"Bearer {os.getenv('LM_STUDIO_API_KEY')}"}
+        r = httpx.get(url, timeout=5, headers=headers)
         log.debug("LM Studio response: HTTP %d", r.status_code)
         if r.status_code != 200:
             log.warning("LM Studio returned unexpected status HTTP %d — body: %s", r.status_code, r.text[:200])
