@@ -28,3 +28,11 @@
   "stats": {},
   "system_fingerprint": "qwen/qwen3.5-9b"
 }
+
+2026-04-18 09:23:03 [ERROR] video_caption.lm_studio — LM Studio API error (HTTP 400): Error code: 400 - {'error': "'response_format.type' must be 'json_schema' or 'text'"}
+2026-04-18 09:23:03 [ERROR] video_caption.translator — Segment 2/2 translation failed, keeping original: 'I thought there would be enough brains between you idiots to complete this opera' — Error code: 400 - {'error': "'response_format.type' must be 'json_schema' or 'text'"}
+2026-04-18 09:23:03 [DEBUG] video_caption.translator — Segment 2/2 done
+2026-04-18 09:23:03 [ERROR] video_caption.lm_studio — LM Studio API error (HTTP 400): Error code: 400 - {'error': "'response_format.type' must be 'json_schema' or 'text'"}
+2026-04-18 09:23:03 [ERROR] video_caption.translator — Segment 1/2 translation failed, keeping original: 'This is a record loss for our military forces.' — Error code: 400 - {'error': "'response_format.type' must be 'json_schema' or 'text'"}
+2026-04-18 09:23:03 [DEBUG] video_caption.translator — Segment 1/2 done
+2026-04-18 09:23:03 [DEBUG] video_caption.translator — Checkpoint removed: tmp/video-caption/output/[FOW-014] Severance/translation_checkpoint_zh.json
