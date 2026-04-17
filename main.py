@@ -5,7 +5,8 @@ import typer
 
 from src.video_caption.clients.minio_client import MinIOClient
 from src.video_caption.config import AppConfig, load_config
-from src.video_caption.graph import build_graph, CaptionState
+from src.video_caption.graph import build_transcription_graph, build_translation_graph
+from src.video_caption.state import CaptionState
 from src.video_caption.logger import get_logger, setup_logging
 
 setup_logging()
@@ -38,32 +39,44 @@ def run(
         secure=cfg.minio.secure,
     )
     video_key = _detect_video(minio, cfg)
+    typer.echo(f"Processing {video_key!r} → {lang} ({fmt})")
 
-    graph = build_graph(cfg)
+    # --- Phase 1: Transcription ---
+    log.info("Phase 1 — Transcription: video=%r", video_key)
+    typer.echo("Phase 1: Transcribing...")
+    t_result = build_transcription_graph(cfg).invoke(CaptionState(
+        video_key=video_key,
+        audio_chunks=[],
+        raw_segments=[],
+        output_keys=[],
+    ))
+    if t_result.get("error"):
+        log.error("Transcription failed: %s", t_result["error"])
+        typer.echo(f"[error] {t_result['error']}", err=True)
+        raise typer.Exit(code=1)
 
-    initial_state = CaptionState(
+    # --- Phase 2: Translation & Export ---
+    log.info("Phase 2 — Translation & Export: lang=%s format=%s", lang, fmt)
+    typer.echo("Phase 2: Translating and exporting...")
+    tr_result = build_translation_graph(cfg).invoke(CaptionState(
         video_key=video_key,
         target_lang=lang,
         output_format=fmt,
         title=title,
-        audio_chunks=[],
-        raw_segments=[],
+        local_video_path=t_result["local_video_path"],
+        transcript_json_path=t_result["transcript_json_path"],
+        transcript_csv_path=t_result.get("transcript_csv_path"),
         bilingual_segments=[],
         output_keys=[],
-    )
-
-    log.info("Starting pipeline: video=%r lang=%s format=%s", video_key, lang, fmt)
-    typer.echo(f"Processing {video_key!r} → {lang} ({fmt})")
-    result = graph.invoke(initial_state)
-
-    if result.get("error"):
-        log.error("Pipeline failed: %s", result["error"])
-        typer.echo(f"[error] {result['error']}", err=True)
+    ))
+    if tr_result.get("error"):
+        log.error("Translation failed: %s", tr_result["error"])
+        typer.echo(f"[error] {tr_result['error']}", err=True)
         raise typer.Exit(code=1)
 
-    log.info("Pipeline complete — %d output file(s)", len(result.get("output_keys", [])))
+    log.info("Pipeline complete — %d output file(s)", len(tr_result.get("output_keys", [])))
     typer.echo("Done. Files uploaded to MinIO video-output:")
-    for key in result.get("output_keys", []):
+    for key in tr_result.get("output_keys", []):
         typer.echo(f"  {key}")
 
 
