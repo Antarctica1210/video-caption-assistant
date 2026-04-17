@@ -2,8 +2,8 @@ import time
 
 import httpx
 import openai
+from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
 
 from ..logger import get_logger
 
@@ -21,17 +21,17 @@ class LMStudioClient:
     ):
         self.base_url = base_url.rstrip("/")
         self.max_retries = max_retries
-        self.extra_body = {"enable_thinking": False}
         # max_retries=0: we handle retries manually so we can catch openai-level errors
-        self._llm = ChatOpenAI(
-            base_url=self.base_url,
-            api_key=api_key,
+        self._llm = init_chat_model(
             model=model,
+            model_provider="openai",
+            base_url=base_url,
+            api_key=api_key,
             temperature=0.3,
             max_tokens=2048,
             timeout=timeout,
             max_retries=0,
-            extra_body=self.extra_body,
+            extra_body={"enable_thinking": False},
         )
 
     def health_check(self) -> bool:
