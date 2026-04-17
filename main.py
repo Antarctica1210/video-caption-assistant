@@ -90,11 +90,21 @@ def _detect_video(minio: MinIOClient, cfg: AppConfig) -> str:
 
 def _check_lm_studio(base_url: str) -> bool:
     import httpx
+    url = f"{base_url.rstrip('/')}/models"
+    log.debug("Checking LM Studio at %s", url)
     try:
-        r = httpx.get(f"{base_url.rstrip('/')}/models", timeout=5)
+        r = httpx.get(url, timeout=5)
+        log.debug("LM Studio response: HTTP %d", r.status_code)
+        if r.status_code != 200:
+            log.warning("LM Studio returned unexpected status HTTP %d — body: %s", r.status_code, r.text[:200])
         return r.status_code == 200
-    except Exception:
-        return False
+    except httpx.ConnectError as e:
+        log.error("LM Studio connection refused at %s — is the server running? (%s)", url, e)
+    except httpx.TimeoutException:
+        log.error("LM Studio health check timed out at %s", url)
+    except Exception as e:
+        log.error("LM Studio health check failed: %s: %s", type(e).__name__, e)
+    return False
 
 
 def main() -> None:
