@@ -1,3 +1,4 @@
+import json
 import time
 from typing import Optional
 
@@ -44,12 +45,13 @@ def _get_llm(
             base_url=base_url,
             api_key=api_key,
             temperature=0.3,
-            max_tokens=2048,
+            max_tokens=512,
             timeout=timeout,
             max_retries=0,       # retries handled manually to catch openai-level errors
-            extra_body={"enable_thinking": False},
             model_kwargs=model_kwargs,
-        )
+        # .bind() attaches extra_body to every invocation — constructor-level extra_body
+        # is not reliably forwarded by all langchain-openai versions
+        ).bind(extra_body={"enable_thinking": False})
     except Exception as e:
         raise RuntimeError(f"LLM client initialisation failed for model [{model}]: {e}") from e
 
@@ -86,18 +88,19 @@ class LMStudioClient:
     def translate(self, text: str, target_lang: str, system_prompt: Optional[str] = None) -> str:
         system = system_prompt or (
             f"You are a professional subtitle translator. "
-            f"Translate the following text to {target_lang}. "
+            f"Translate the following subtitle line to {target_lang}. "
             f"Preserve the original tone and brevity. "
-            f"Output only the translated text, no explanations."
+            f'Return a JSON object with a single key "translated" containing the translated text. '
+            f"Example: {{\"translated\": \"your translation here\"}}"
         )
         messages = [SystemMessage(content=system), HumanMessage(content=text)]
-        llm = self._llm()
+        llm = self._llm(json_mode=True)
 
         last_exc: Exception | None = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = llm.invoke(messages)
-                return response.content.strip()
+                return self._parse_translation(response.content, text)
             except (openai.APITimeoutError, httpx.TimeoutException) as e:
                 last_exc = e
                 log.warning(
@@ -118,3 +121,17 @@ class LMStudioClient:
 
         log.error("LM Studio failed after %d attempts: %s", self.max_retries, last_exc)
         raise RuntimeError(f"LM Studio request failed after {self.max_retries} attempts") from last_exc
+
+    def _parse_translation(self, content: str, original: str) -> str:
+        try:
+            data = json.loads(content)
+            translated = data.get("translated", "").strip()
+            if translated:
+                return translated
+            log.warning("JSON response missing 'translated' key — raw: %r", content[:200])
+        except json.JSONDecodeError:
+            log.warning("Failed to parse JSON response, using raw content — raw: %r", content[:200])
+            stripped = content.strip()
+            if stripped:
+                return stripped
+        return original
