@@ -56,7 +56,7 @@ def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudio
     def _run(idx: int, seg: Segment) -> tuple[int, str]:
         log.debug("Segment %d/%d started", idx + 1, total)
         try:
-            translated = lm.translate(seg["text"], target_lang)
+            translated = lm.translate(seg["text"], target_lang)[0].get("text", "").strip()
         except Exception as e:
             log.error(
                 "Segment %d/%d translation failed, keeping original: %r — %s",

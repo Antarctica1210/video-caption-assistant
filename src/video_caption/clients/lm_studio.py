@@ -49,10 +49,11 @@ def _get_llm(
             timeout=timeout,
             max_retries=0,       # retries handled manually to catch openai-level errors
             model_kwargs=model_kwargs,
+            reasoning={"effort": "none"},  # top-level param (some LM Studio builds)
             extra_body={
                 "enable_thinking": False,                        # top-level param (some LM Studio builds)
-                "chat_template_kwargs": {"enable_thinking": False},  # Qwen3 Jinja2 template param
-            },
+                "chat_template_kwargs": {"enable_thinking": False},
+            }  # disable_thinking is not always respected, so also disable reasoning to avoid leaking content into reasoning_content
         )
     except Exception as e:
         raise RuntimeError(f"LLM client initialisation failed for model [{model}]: {e}") from e
@@ -101,7 +102,7 @@ class LMStudioClient:
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = llm.invoke(messages)
-                content = response.content.strip()
+                content = response.content
                 if content:
                     return content
                 # Qwen3 thinking still active — content is empty, answer leaked into reasoning_content
