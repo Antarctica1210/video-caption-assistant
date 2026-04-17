@@ -62,7 +62,7 @@ def load_config(path: str = "config.toml") -> AppConfig:
         lm_studio=LMStudioConfig(
             base_url=os.getenv("LM_STUDIO_BASE_URL", ls["base_url"]),
             api_key=os.getenv("LM_STUDIO_API_KEY", ls.get("api_key")),
-            model=ls["model"],
+            model=ls.get("model", "qwen/qwen3.5-9b"),
             timeout=ls.get("timeout", 60),
             max_retries=ls.get("max_retries", 3),
         ),
