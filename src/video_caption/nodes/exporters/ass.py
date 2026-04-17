@@ -2,6 +2,7 @@ from pathlib import Path
 
 from ...config import AppConfig
 from ...state import CaptionState
+from ..title import TITLE_END, TITLE_START
 
 _HEADER = """\
 [Script Info]
@@ -28,7 +29,7 @@ def export_ass(state: CaptionState, app_config: AppConfig) -> dict:
 
     if state.get("translated_title"):
         t = state["translated_title"]
-        events.append(f"Dialogue: 0,{_ts(0.0)},{_ts(5.0)},Original,,0,0,0,,{t}")
+        events.append(f"Dialogue: 0,{_ts(TITLE_START)},{_ts(TITLE_END)},Original,,0,0,0,,{t}")
 
     for seg in state["bilingual_segments"]:
         s, e = _ts(seg["start"]), _ts(seg["end"])

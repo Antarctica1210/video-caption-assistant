@@ -2,6 +2,7 @@ from pathlib import Path
 
 from ...config import AppConfig
 from ...state import CaptionState
+from ..title import TITLE_END, TITLE_START
 
 
 def export_srt(state: CaptionState, app_config: AppConfig) -> dict:
@@ -13,7 +14,7 @@ def export_srt(state: CaptionState, app_config: AppConfig) -> dict:
     idx = 1
 
     if state.get("translated_title"):
-        blocks.append(_block(idx, 0.0, 5.0, state["translated_title"], state["translated_title"]))
+        blocks.append(_block(idx, TITLE_START, TITLE_END, state["translated_title"], state["translated_title"]))
         idx += 1
 
     for seg in state["bilingual_segments"]:
