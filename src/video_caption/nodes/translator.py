@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from ..clients.lm_studio import LMStudioClient
 from ..config import AppConfig
 from ..logger import get_logger
@@ -5,23 +7,37 @@ from ..state import BilingualSegment, CaptionState, Segment
 
 log = get_logger("video_caption.translator")
 
-BATCH_SIZE = 4  # segments per LM Studio request
+BATCH_SIZE = 4    # segments per LM Studio request
+MAX_WORKERS = 4   # concurrent requests to LM Studio
 
 
 def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudioClient) -> dict:
     target_lang = state["target_lang"]
     segments = state["raw_segments"]
     total = len(segments)
-    log.info("Translating %d segment(s) to '%s' in batches of %d", total, target_lang, BATCH_SIZE)
+    batches = [segments[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
+    log.info(
+        "Translating %d segment(s) to '%s' — %d batch(es) x %d segments, %d parallel workers",
+        total, target_lang, len(batches), BATCH_SIZE, MAX_WORKERS,
+    )
+
+    results: dict[int, list[str]] = {}
+
+    def _run(idx: int, batch: list[Segment]) -> tuple[int, list[str]]:
+        log.debug("Batch %d/%d started (%d segments)", idx + 1, len(batches), len(batch))
+        translations = _translate_batch(lm, batch, target_lang)
+        log.debug("Batch %d/%d done", idx + 1, len(batches))
+        return idx, translations
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {executor.submit(_run, i, batch): i for i, batch in enumerate(batches)}
+        for future in as_completed(futures):
+            idx, translations = future.result()
+            results[idx] = translations
 
     bilingual: list[BilingualSegment] = []
-    batches = [segments[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
-
-    for batch_idx, batch in enumerate(batches, start=1):
-        log.debug("Translating batch %d/%d (%d segments)", batch_idx, len(batches), len(batch))
-        translations = _translate_batch(lm, batch, target_lang)
-
-        for seg, translated in zip(batch, translations):
+    for i, batch in enumerate(batches):
+        for seg, translated in zip(batch, results[i]):
             bilingual.append({
                 "original": seg["text"],
                 "translated": translated,
