@@ -9,6 +9,7 @@ load_dotenv()
 @dataclass
 class LMStudioConfig:
     base_url: str
+    api_key: str
     model: str
     timeout: int
     max_retries: int
@@ -59,6 +60,7 @@ def load_config(path: str = "config.toml") -> AppConfig:
     return AppConfig(
         lm_studio=LMStudioConfig(
             base_url=os.getenv("LM_STUDIO_BASE_URL", ls["base_url"]),
+            api_key=os.getenv("LM_STUDIO_API_KEY", ls.get("api_key")),
             model=ls["model"],
             timeout=ls.get("timeout", 60),
             max_retries=ls.get("max_retries", 3),

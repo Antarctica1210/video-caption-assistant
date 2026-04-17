@@ -1,7 +1,7 @@
 import typer
 
 from src.video_caption.config import load_config
-from src.video_caption.graph import build_graph
+from src.video_caption.graph import build_graph, CaptionState
 
 app = typer.Typer(help="Video caption assistant — transcribe, translate, and export captions.")
 
@@ -23,19 +23,19 @@ def run(
 
     graph = build_graph(cfg)
 
-    initial: dict = {
-        "video_key": video,
-        "target_lang": lang,
-        "output_format": fmt,
-        "title": title,
-        "audio_chunks": [],
-        "raw_segments": [],
-        "bilingual_segments": [],
-        "output_keys": [],
-    }
+    initial_state = CaptionState(
+        video_key=video,
+        target_lang=lang,
+        output_format=fmt,
+        title=title,
+        audio_chunks=[],
+        raw_segments=[],
+        bilingual_segments=[],
+        output_keys=[],
+    )
 
     typer.echo(f"Processing {video!r} → {lang} ({fmt})")
-    result = graph.invoke(initial)
+    result = graph.invoke(initial_state)
 
     if result.get("error"):
         typer.echo(f"[error] {result['error']}", err=True)
