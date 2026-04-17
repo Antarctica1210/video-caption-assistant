@@ -19,9 +19,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 
 
-def export_ass(state: CaptionState, config: AppConfig) -> dict:
+def export_ass(state: CaptionState, app_config: AppConfig) -> dict:
     stem = Path(state["local_video_path"]).stem
-    out_dir = Path(config.temp_dir) / "output" / stem
+    out_dir = Path(app_config.temp_dir) / "output" / stem
     ass_path = out_dir / f"{stem}.ass"
 
     events: list[str] = []

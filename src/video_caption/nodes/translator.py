@@ -6,7 +6,7 @@ from ..state import BilingualSegment, CaptionState
 log = get_logger("video_caption.translator")
 
 
-def translate_segments(state: CaptionState, config: AppConfig, lm: LMStudioClient) -> dict:
+def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudioClient) -> dict:
     target_lang = state["target_lang"]
     total = len(state["raw_segments"])
     log.info("Translating %d segment(s) to '%s'", total, target_lang)

@@ -8,9 +8,9 @@ from ..state import CaptionState
 log = get_logger("video_caption.uploader")
 
 
-def upload_outputs(state: CaptionState, config: AppConfig, minio: MinIOClient) -> dict:
+def upload_outputs(state: CaptionState, app_config: AppConfig, minio: MinIOClient) -> dict:
     stem = Path(state["local_video_path"]).stem
-    bucket = config.minio.output_bucket
+    bucket = app_config.minio.output_bucket
     keys: list[str] = []
 
     for field in ("srt_path", "ass_path", "transcript_json_path", "transcript_csv_path"):

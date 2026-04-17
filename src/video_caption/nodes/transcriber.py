@@ -11,26 +11,26 @@ log = get_logger("video_caption.transcriber")
 _model: WhisperModel | None = None
 
 
-def _get_model(config: AppConfig) -> WhisperModel:
+def _get_model(app_config: AppConfig) -> WhisperModel:
     global _model
     if _model is None:
         log.info(
             "Loading faster-whisper model '%s' on %s (%s)",
-            config.whisper.model_size,
-            config.whisper.device,
-            config.whisper.compute_type,
+            app_config.whisper.model_size,
+            app_config.whisper.device,
+            app_config.whisper.compute_type,
         )
         _model = WhisperModel(
-            config.whisper.model_size,
-            device=config.whisper.device,
-            compute_type=config.whisper.compute_type,
+            app_config.whisper.model_size,
+            device=app_config.whisper.device,
+            compute_type=app_config.whisper.compute_type,
         )
         log.info("Model loaded")
     return _model
 
 
-def transcribe_chunks(state: CaptionState, config: AppConfig) -> dict:
-    model = _get_model(config)
+def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
+    model = _get_model(app_config)
     chunks = state["audio_chunks"]
     log.info("Transcribing %d chunk(s) in parallel", len(chunks))
 

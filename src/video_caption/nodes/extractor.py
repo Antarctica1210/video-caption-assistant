@@ -10,8 +10,8 @@ from ..state import CaptionState
 log = get_logger("video_caption.extractor")
 
 
-def fetch_and_extract(state: CaptionState, config: AppConfig, minio: MinIOClient) -> dict:
-    temp_dir = Path(config.temp_dir)
+def fetch_and_extract(state: CaptionState, app_config: AppConfig, minio: MinIOClient) -> dict:
+    temp_dir = Path(app_config.temp_dir)
     video_key = state["video_key"]
     stem = Path(video_key).stem
 
@@ -19,8 +19,8 @@ def fetch_and_extract(state: CaptionState, config: AppConfig, minio: MinIOClient
     local_audio = temp_dir / "audio" / f"{stem}.wav"
     local_audio.parent.mkdir(parents=True, exist_ok=True)
 
-    log.info("Downloading '%s' from bucket '%s'", video_key, config.minio.input_bucket)
-    minio.download(config.minio.input_bucket, video_key, local_video)
+    log.info("Downloading '%s' from bucket '%s'", video_key, app_config.minio.input_bucket)
+    minio.download(app_config.minio.input_bucket, video_key, local_video)
     log.info("Downloaded to %s", local_video)
 
     log.info("Extracting audio → %s", local_audio)

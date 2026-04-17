@@ -9,14 +9,14 @@ from ..state import AudioChunk, CaptionState
 log = get_logger("video_caption.chunker")
 
 
-def chunk_audio(state: CaptionState, config: AppConfig) -> dict:
+def chunk_audio(state: CaptionState, app_config: AppConfig) -> dict:
     audio_path = Path(state["local_audio_path"])
     chunk_dir = audio_path.parent / "chunks"
     chunk_dir.mkdir(exist_ok=True)
 
     duration = _get_duration(audio_path)
-    chunk_size = float(config.chunk_duration)
-    overlap = float(config.chunk_overlap)
+    chunk_size = float(app_config.chunk_duration)
+    overlap = float(app_config.chunk_overlap)
 
     log.info("Audio duration: %.1fs — splitting into %ds chunks (overlap %ds)", duration, chunk_size, overlap)
 

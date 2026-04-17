@@ -9,7 +9,7 @@ from ..state import CaptionState, Segment
 log = get_logger("video_caption.assembler")
 
 
-def merge_and_save(state: CaptionState, config: AppConfig) -> dict:
+def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
     before = len(state["raw_segments"])
     segments = _deduplicate(state["raw_segments"])
     after = len(segments)
@@ -18,7 +18,7 @@ def merge_and_save(state: CaptionState, config: AppConfig) -> dict:
         log.info("Deduplicated segments: %d → %d", before, after)
 
     stem = Path(state["local_video_path"]).stem
-    out_dir = Path(config.temp_dir) / "output" / stem
+    out_dir = Path(app_config.temp_dir) / "output" / stem
     out_dir.mkdir(parents=True, exist_ok=True)
 
     json_path = out_dir / "transcript.json"

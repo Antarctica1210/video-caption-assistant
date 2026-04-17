@@ -12,35 +12,35 @@ from .nodes.transcriber import transcribe_chunks
 from .state import CaptionState
 
 
-def build_graph(config: AppConfig):
+def build_graph(app_config: AppConfig):
     lm = LMStudioClient(
-        base_url=config.lm_studio.base_url,
-        model=config.lm_studio.model,
-        api_key=config.lm_studio.api_key,
-        timeout=config.lm_studio.timeout,
-        max_retries=config.lm_studio.max_retries,
+        base_url=app_config.lm_studio.base_url,
+        model=app_config.lm_studio.model,
+        api_key=app_config.lm_studio.api_key,
+        timeout=app_config.lm_studio.timeout,
+        max_retries=app_config.lm_studio.max_retries,
     )
     minio = MinIOClient(
-        endpoint=config.minio.endpoint,
-        access_key=config.minio.access_key,
-        secret_key=config.minio.secret_key,
-        secure=config.minio.secure,
+        endpoint=app_config.minio.endpoint,
+        access_key=app_config.minio.access_key,
+        secret_key=app_config.minio.secret_key,
+        secure=app_config.minio.secure,
     )
-    minio.ensure_bucket(config.minio.input_bucket)
-    minio.ensure_bucket(config.minio.output_bucket)
+    minio.ensure_bucket(app_config.minio.input_bucket)
+    minio.ensure_bucket(app_config.minio.output_bucket)
 
     g = StateGraph(CaptionState)
 
-    g.add_node("fetch_and_extract", partial(extractor.fetch_and_extract, config=config, minio=minio))
-    g.add_node("chunk_audio",       partial(chunker.chunk_audio, config=config))
-    g.add_node("transcribe_chunks", partial(transcribe_chunks, config=config))
-    g.add_node("merge_and_save",    partial(assembler.merge_and_save, config=config))
+    g.add_node("fetch_and_extract", partial(extractor.fetch_and_extract, app_config=app_config, minio=minio))
+    g.add_node("chunk_audio",       partial(chunker.chunk_audio, app_config=app_config))
+    g.add_node("transcribe_chunks", partial(transcribe_chunks, app_config=app_config))
+    g.add_node("merge_and_save",    partial(assembler.merge_and_save, app_config=app_config))
     g.add_node("translate_title",   partial(title_node.translate_title, lm=lm))
-    g.add_node("translate_segments",partial(translator.translate_segments, config=config, lm=lm))
+    g.add_node("translate_segments",partial(translator.translate_segments, _app_config=app_config, lm=lm))
     g.add_node("validate_timeline", validator.validate_timeline)
-    g.add_node("export_srt",        partial(srt.export_srt, config=config))
-    g.add_node("export_ass",        partial(ass.export_ass, config=config))
-    g.add_node("upload_outputs",    partial(uploader.upload_outputs, config=config, minio=minio))
+    g.add_node("export_srt",        partial(srt.export_srt, app_config=app_config))
+    g.add_node("export_ass",        partial(ass.export_ass, app_config=app_config))
+    g.add_node("upload_outputs",    partial(uploader.upload_outputs, app_config=app_config, minio=minio))
 
     g.set_entry_point("fetch_and_extract")
     g.add_edge("fetch_and_extract",  "chunk_audio")

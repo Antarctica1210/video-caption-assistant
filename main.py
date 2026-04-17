@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import typer
 
@@ -28,6 +29,7 @@ def run(
     if not lm_ok:
         typer.echo(f"[error] Cannot reach LM Studio at {cfg.lm_studio.base_url}", err=True)
         raise typer.Exit(code=1)
+    _check_system_dependencies()
 
     minio = MinIOClient(
         endpoint=cfg.minio.endpoint,
@@ -108,6 +110,20 @@ def _check_lm_studio(base_url: str) -> bool:
     except Exception as e:
         log.error("LM Studio health check failed: %s: %s", type(e).__name__, e)
     return False
+
+
+def _check_system_dependencies() -> None:
+    if shutil.which("ffmpeg"):
+        return
+
+    typer.echo(
+        "[error] ffmpeg is not installed or not available on PATH.\n"
+        "Install ffmpeg and retry:\n"
+        "  Ubuntu/Debian: sudo apt update && sudo apt install -y ffmpeg\n"
+        "  macOS (Homebrew): brew install ffmpeg",
+        err=True,
+    )
+    raise typer.Exit(code=1)
 
 
 def main() -> None:

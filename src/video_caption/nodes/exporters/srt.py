@@ -4,9 +4,9 @@ from ...config import AppConfig
 from ...state import CaptionState
 
 
-def export_srt(state: CaptionState, config: AppConfig) -> dict:
+def export_srt(state: CaptionState, app_config: AppConfig) -> dict:
     stem = Path(state["local_video_path"]).stem
-    out_dir = Path(config.temp_dir) / "output" / stem
+    out_dir = Path(app_config.temp_dir) / "output" / stem
     srt_path = out_dir / f"{stem}.srt"
 
     blocks: list[str] = []
