@@ -1,0 +1,531 @@
+2026-04-17 21:33:12 [DEBUG] video_caption.translator — Batch 46/46 done
+╭─────────────────────────────────────────────────── Traceback (most recent call last) ───────────────────────────────────────────────────╮
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_transports/default.py: │
+│ 101 in map_httpcore_exceptions                                                                                                          │
+│                                                                                                                                         │
+│    98 │   if len(HTTPCORE_EXC_MAP) == 0:                                                                                                │
+│    99 │   │   HTTPCORE_EXC_MAP = _load_httpcore_exceptions()                                                                            │
+│   100 │   try:                                                                                                                          │
+│ ❱ 101 │   │   yield                                                                                                                     │
+│   102 │   except Exception as exc:                                                                                                      │
+│   103 │   │   mapped_exc = None                                                                                                         │
+│   104                                                                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_transports/default.py: │
+│ 250 in handle_request                                                                                                                   │
+│                                                                                                                                         │
+│   247 │   │   │   extensions=request.extensions,                                                                                        │
+│   248 │   │   )                                                                                                                         │
+│   249 │   │   with map_httpcore_exceptions():                                                                                           │
+│ ❱ 250 │   │   │   resp = self._pool.handle_request(req)                                                                                 │
+│   251 │   │                                                                                                                             │
+│   252 │   │   assert isinstance(resp.stream, typing.Iterable)                                                                           │
+│   253                                                                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_poo │
+│ l.py:256 in handle_request                                                                                                              │
+│                                                                                                                                         │
+│   253 │   │   │   │   closing = self._assign_requests_to_connections()                                                                  │
+│   254 │   │   │                                                                                                                         │
+│   255 │   │   │   self._close_connections(closing)                                                                                      │
+│ ❱ 256 │   │   │   raise exc from None                                                                                                   │
+│   257 │   │                                                                                                                             │
+│   258 │   │   # Return the response. Note that in this case we still have to manage                                                     │
+│   259 │   │   # the point at which the response is closed.                                                                              │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_poo │
+│ l.py:236 in handle_request                                                                                                              │
+│                                                                                                                                         │
+│   233 │   │   │   │                                                                                                                     │
+│   234 │   │   │   │   try:                                                                                                              │
+│   235 │   │   │   │   │   # Send the request on the assigned connection.                                                                │
+│ ❱ 236 │   │   │   │   │   response = connection.handle_request(                                                                         │
+│   237 │   │   │   │   │   │   pool_request.request                                                                                      │
+│   238 │   │   │   │   │   )                                                                                                             │
+│   239 │   │   │   │   except ConnectionNotAvailable:                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py: │
+│ 103 in handle_request                                                                                                                   │
+│                                                                                                                                         │
+│   100 │   │   │   self._connect_failed = True                                                                                           │
+│   101 │   │   │   raise exc                                                                                                             │
+│   102 │   │                                                                                                                             │
+│ ❱ 103 │   │   return self._connection.handle_request(request)                                                                           │
+│   104 │                                                                                                                                 │
+│   105 │   def _connect(self, request: Request) -> NetworkStream:                                                                        │
+│   106 │   │   timeouts = request.extensions.get("timeout", {})                                                                          │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:136  │
+│ in handle_request                                                                                                                       │
+│                                                                                                                                         │
+│   133 │   │   │   with ShieldCancellation():                                                                                            │
+│   134 │   │   │   │   with Trace("response_closed", logger, request) as trace:                                                          │
+│   135 │   │   │   │   │   self._response_closed()                                                                                       │
+│ ❱ 136 │   │   │   raise exc                                                                                                             │
+│   137 │                                                                                                                                 │
+│   138 │   # Sending the request...                                                                                                      │
+│   139                                                                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:106  │
+│ in handle_request                                                                                                                       │
+│                                                                                                                                         │
+│   103 │   │   │   │   │   reason_phrase,                                                                                                │
+│   104 │   │   │   │   │   headers,                                                                                                      │
+│   105 │   │   │   │   │   trailing_data,                                                                                                │
+│ ❱ 106 │   │   │   │   ) = self._receive_response_headers(**kwargs)                                                                      │
+│   107 │   │   │   │   trace.return_value = (                                                                                            │
+│   108 │   │   │   │   │   http_version,                                                                                                 │
+│   109 │   │   │   │   │   status,                                                                                                       │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:177  │
+│ in _receive_response_headers                                                                                                            │
+│                                                                                                                                         │
+│   174 │   │   timeout = timeouts.get("read", None)                                                                                      │
+│   175 │   │                                                                                                                             │
+│   176 │   │   while True:                                                                                                               │
+│ ❱ 177 │   │   │   event = self._receive_event(timeout=timeout)                                                                          │
+│   178 │   │   │   if isinstance(event, h11.Response):                                                                                   │
+│   179 │   │   │   │   break                                                                                                             │
+│   180 │   │   │   if (                                                                                                                  │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:217  │
+│ in _receive_event                                                                                                                       │
+│                                                                                                                                         │
+│   214 │   │   │   │   event = self._h11_state.next_event()                                                                              │
+│   215 │   │   │                                                                                                                         │
+│   216 │   │   │   if event is h11.NEED_DATA:                                                                                            │
+│ ❱ 217 │   │   │   │   data = self._network_stream.read(                                                                                 │
+│   218 │   │   │   │   │   self.READ_NUM_BYTES, timeout=timeout                                                                          │
+│   219 │   │   │   │   )                                                                                                                 │
+│   220                                                                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py:12 │
+│ 6 in read                                                                                                                               │
+│                                                                                                                                         │
+│   123 │                                                                                                                                 │
+│   124 │   def read(self, max_bytes: int, timeout: float | None = None) -> bytes:                                                        │
+│   125 │   │   exc_map: ExceptionMapping = {socket.timeout: ReadTimeout, OSError: ReadError}                                             │
+│ ❱ 126 │   │   with map_exceptions(exc_map):                                                                                             │
+│   127 │   │   │   self._sock.settimeout(timeout)                                                                                        │
+│   128 │   │   │   return self._sock.recv(max_bytes)                                                                                     │
+│   129                                                                                                                                   │
+│                                                                                                                                         │
+│ /usr/lib/python3.12/contextlib.py:158 in __exit__                                                                                       │
+│                                                                                                                                         │
+│   155 │   │   │   │   # tell if we get the same exception back                                                                          │
+│   156 │   │   │   │   value = typ()                                                                                                     │
+│   157 │   │   │   try:                                                                                                                  │
+│ ❱ 158 │   │   │   │   self.gen.throw(value)                                                                                             │
+│   159 │   │   │   except StopIteration as exc:                                                                                          │
+│   160 │   │   │   │   # Suppress StopIteration *unless* it's the same exception that                                                    │
+│   161 │   │   │   │   # was passed to throw().  This prevents a StopIteration                                                           │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py:14 in │
+│ map_exceptions                                                                                                                          │
+│                                                                                                                                         │
+│   11 │   except Exception as exc:  # noqa: PIE786                                                                                       │
+│   12 │   │   for from_exc, to_exc in map.items():                                                                                       │
+│   13 │   │   │   if isinstance(exc, from_exc):                                                                                          │
+│ ❱ 14 │   │   │   │   raise to_exc(exc) from exc                                                                                         │
+│   15 │   │   raise  # pragma: nocover                                                                                                   │
+│   16                                                                                                                                    │
+│   17                                                                                                                                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ReadTimeout: timed out
+[NOTE] During task with name 'translate_segments' and id '862e9db8-4ab0-963c-a14b-846675e55b59'
+
+The above exception was the direct cause of the following exception:
+
+╭─────────────────────────────────────────────────── Traceback (most recent call last) ───────────────────────────────────────────────────╮
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_base_client.py:1019   │
+│ in request                                                                                                                              │
+│                                                                                                                                         │
+│   1016 │   │   │                                                                                                                        │
+│   1017 │   │   │   response = None                                                                                                      │
+│   1018 │   │   │   try:                                                                                                                 │
+│ ❱ 1019 │   │   │   │   response = self._send_request(                                                                                   │
+│   1020 │   │   │   │   │   request,                                                                                                     │
+│   1021 │   │   │   │   │   stream=stream or self._should_stream_response_body(request=request),                                         │
+│   1022 │   │   │   │   │   **kwargs,                                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_client.py:400 in      │
+│ _send_request                                                                                                                           │
+│                                                                                                                                         │
+│    397 │   │   stream: bool,                                                                                                            │
+│    398 │   │   **kwargs: Unpack[HttpxSendArgs],                                                                                         │
+│    399 │   ) -> httpx.Response:                                                                                                         │
+│ ❱  400 │   │   return self._send_with_auth_retry(request, stream=stream, **kwargs)                                                      │
+│    401 │                                                                                                                                │
+│    402 │   @property                                                                                                                    │
+│    403 │   @override                                                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_client.py:378 in      │
+│ _send_with_auth_retry                                                                                                                   │
+│                                                                                                                                         │
+│    375 │   │   if self._workload_identity_auth:                                                                                         │
+│    376 │   │   │   request.headers["Authorization"] = f"Bearer {self._workload_identity_auth.ge                                         │
+│    377 │   │                                                                                                                            │
+│ ❱  378 │   │   response = super()._send_request(request, stream=stream, **kwargs)                                                       │
+│    379 │   │                                                                                                                            │
+│    380 │   │   if not retried and response.status_code == 401 and self._workload_identity_auth:                                         │
+│    381 │   │   │   response.close()                                                                                                     │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_base_client.py:947 in │
+│ _send_request                                                                                                                           │
+│                                                                                                                                         │
+│    944 │   │   stream: bool,                                                                                                            │
+│    945 │   │   **kwargs: Unpack[HttpxSendArgs],                                                                                         │
+│    946 │   ) -> httpx.Response:                                                                                                         │
+│ ❱  947 │   │   return self._client.send(request, stream=stream, **kwargs)                                                               │
+│    948 │                                                                                                                                │
+│    949 │   @overload                                                                                                                    │
+│    950 │   def request(                                                                                                                 │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_client.py:914 in send  │
+│                                                                                                                                         │
+│    911 │   │                                                                                                                            │
+│    912 │   │   auth = self._build_request_auth(request, auth)                                                                           │
+│    913 │   │                                                                                                                            │
+│ ❱  914 │   │   response = self._send_handling_auth(                                                                                     │
+│    915 │   │   │   request,                                                                                                             │
+│    916 │   │   │   auth=auth,                                                                                                           │
+│    917 │   │   │   follow_redirects=follow_redirects,                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_client.py:942 in       │
+│ _send_handling_auth                                                                                                                     │
+│                                                                                                                                         │
+│    939 │   │   │   request = next(auth_flow)                                                                                            │
+│    940 │   │   │                                                                                                                        │
+│    941 │   │   │   while True:                                                                                                          │
+│ ❱  942 │   │   │   │   response = self._send_handling_redirects(                                                                        │
+│    943 │   │   │   │   │   request,                                                                                                     │
+│    944 │   │   │   │   │   follow_redirects=follow_redirects,                                                                           │
+│    945 │   │   │   │   │   history=history,                                                                                             │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_client.py:979 in       │
+│ _send_handling_redirects                                                                                                                │
+│                                                                                                                                         │
+│    976 │   │   │   for hook in self._event_hooks["request"]:                                                                            │
+│    977 │   │   │   │   hook(request)                                                                                                    │
+│    978 │   │   │                                                                                                                        │
+│ ❱  979 │   │   │   response = self._send_single_request(request)                                                                        │
+│    980 │   │   │   try:                                                                                                                 │
+│    981 │   │   │   │   for hook in self._event_hooks["response"]:                                                                       │
+│    982 │   │   │   │   │   hook(response)                                                                                               │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_client.py:1014 in      │
+│ _send_single_request                                                                                                                    │
+│                                                                                                                                         │
+│   1011 │   │   │   )                                                                                                                    │
+│   1012 │   │                                                                                                                            │
+│   1013 │   │   with request_context(request=request):                                                                                   │
+│ ❱ 1014 │   │   │   response = transport.handle_request(request)                                                                         │
+│   1015 │   │                                                                                                                            │
+│   1016 │   │   assert isinstance(response.stream, SyncByteStream)                                                                       │
+│   1017                                                                                                                                  │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_transports/default.py: │
+│ 249 in handle_request                                                                                                                   │
+│                                                                                                                                         │
+│   246 │   │   │   content=request.stream,                                                                                               │
+│   247 │   │   │   extensions=request.extensions,                                                                                        │
+│   248 │   │   )                                                                                                                         │
+│ ❱ 249 │   │   with map_httpcore_exceptions():                                                                                           │
+│   250 │   │   │   resp = self._pool.handle_request(req)                                                                                 │
+│   251 │   │                                                                                                                             │
+│   252 │   │   assert isinstance(resp.stream, typing.Iterable)                                                                           │
+│                                                                                                                                         │
+│ /usr/lib/python3.12/contextlib.py:158 in __exit__                                                                                       │
+│                                                                                                                                         │
+│   155 │   │   │   │   # tell if we get the same exception back                                                                          │
+│   156 │   │   │   │   value = typ()                                                                                                     │
+│   157 │   │   │   try:                                                                                                                  │
+│ ❱ 158 │   │   │   │   self.gen.throw(value)                                                                                             │
+│   159 │   │   │   except StopIteration as exc:                                                                                          │
+│   160 │   │   │   │   # Suppress StopIteration *unless* it's the same exception that                                                    │
+│   161 │   │   │   │   # was passed to throw().  This prevents a StopIteration                                                           │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/httpx/_transports/default.py: │
+│ 118 in map_httpcore_exceptions                                                                                                          │
+│                                                                                                                                         │
+│   115 │   │   │   raise                                                                                                                 │
+│   116 │   │                                                                                                                             │
+│   117 │   │   message = str(exc)                                                                                                        │
+│ ❱ 118 │   │   raise mapped_exc(message) from exc                                                                                        │
+│   119                                                                                                                                   │
+│   120                                                                                                                                   │
+│   121 class ResponseStream(SyncByteStream):                                                                                             │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ReadTimeout: timed out
+[NOTE] During task with name 'translate_segments' and id '862e9db8-4ab0-963c-a14b-846675e55b59'
+
+The above exception was the direct cause of the following exception:
+
+╭─────────────────────────────────────────────────── Traceback (most recent call last) ───────────────────────────────────────────────────╮
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/main.py:57 in run                                                │
+│                                                                                                                                         │
+│    54 │                                                                                                                                 │
+│    55 │   log.info("Starting pipeline: video=%r lang=%s format=%s", video_key, lang, fmt)                                               │
+│    56 │   typer.echo(f"Processing {video_key!r} → {lang} ({fmt})")                                                                      │
+│ ❱  57 │   result = graph.invoke(initial_state)                                                                                          │
+│    58 │                                                                                                                                 │
+│    59 │   if result.get("error"):                                                                                                       │
+│    60 │   │   log.error("Pipeline failed: %s", result["error"])                                                                         │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py:3309 │
+│ in invoke                                                                                                                               │
+│                                                                                                                                         │
+│   3306 │   │   │   │   │   chunks.append(chunk)                                                                                         │
+│   3307 │   │   else:                                                                                                                    │
+│   3308 │   │   │   # v1: collect interrupts from updates stream                                                                         │
+│ ❱ 3309 │   │   │   for chunk in self.stream(                                                                                            │
+│   3310 │   │   │   │   input,                                                                                                           │
+│   3311 │   │   │   │   config,                                                                                                          │
+│   3312 │   │   │   │   context=context,                                                                                                 │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py:2736 │
+│ in stream                                                                                                                               │
+│                                                                                                                                         │
+│   2733 │   │   │   │   while loop.tick():                                                                                               │
+│   2734 │   │   │   │   │   for task in loop.match_cached_writes():                                                                      │
+│   2735 │   │   │   │   │   │   loop.output_writes(task.id, task.writes, cached=True)                                                    │
+│ ❱ 2736 │   │   │   │   │   for _ in runner.tick(                                                                                        │
+│   2737 │   │   │   │   │   │   [t for t in loop.tasks.values() if not t.writes],                                                        │
+│   2738 │   │   │   │   │   │   timeout=self.step_timeout,                                                                               │
+│   2739 │   │   │   │   │   │   get_waiter=get_waiter,                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py:1 │
+│ 67 in tick                                                                                                                              │
+│                                                                                                                                         │
+│   164 │   │   elif len(tasks) == 1 and timeout is None and get_waiter is None:                                                          │
+│   165 │   │   │   t = tasks[0]                                                                                                          │
+│   166 │   │   │   try:                                                                                                                  │
+│ ❱ 167 │   │   │   │   run_with_retry(                                                                                                   │
+│   168 │   │   │   │   │   t,                                                                                                            │
+│   169 │   │   │   │   │   retry_policy,                                                                                                 │
+│   170 │   │   │   │   │   configurable={                                                                                                │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_retry.py:12 │
+│ 6 in run_with_retry                                                                                                                     │
+│                                                                                                                                         │
+│   123 │   │   │   # clear any writes from previous attempts                                                                             │
+│   124 │   │   │   task.writes.clear()                                                                                                   │
+│   125 │   │   │   # run the task                                                                                                        │
+│ ❱ 126 │   │   │   return task.proc.invoke(task.input, config)                                                                           │
+│   127 │   │   except ParentCommand as exc:                                                                                              │
+│   128 │   │   │   ns: str = config[CONF][CONFIG_KEY_CHECKPOINT_NS]                                                                      │
+│   129 │   │   │   cmd = exc.args[0]                                                                                                     │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable │
+│ .py:656 in invoke                                                                                                                       │
+│                                                                                                                                         │
+│   653 │   │   │   │   │   │   run = None                                                                                                │
+│   654 │   │   │   │   │   # run in context                                                                                              │
+│   655 │   │   │   │   │   with set_config_context(config, run) as context:                                                              │
+│ ❱ 656 │   │   │   │   │   │   input = context.run(step.invoke, input, config, **kwargs)                                                 │
+│   657 │   │   │   │   else:                                                                                                             │
+│   658 │   │   │   │   │   input = step.invoke(input, config)                                                                            │
+│   659 │   │   # finish the root run                                                                                                     │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable │
+│ .py:400 in invoke                                                                                                                       │
+│                                                                                                                                         │
+│   397 │   │   │   else:                                                                                                                 │
+│   398 │   │   │   │   run_manager.on_chain_end(ret)                                                                                     │
+│   399 │   │   else:                                                                                                                     │
+│ ❱ 400 │   │   │   ret = self.func(*args, **kwargs)                                                                                      │
+│   401 │   │   if self.recurse and isinstance(ret, Runnable):                                                                            │
+│   402 │   │   │   return ret.invoke(input, config)                                                                                      │
+│   403 │   │   return ret                                                                                                                │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/src/video_caption/nodes/translator.py:35 in translate_segments   │
+│                                                                                                                                         │
+│   32 │   with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:                                                                  │
+│   33 │   │   futures = {executor.submit(_run, i, batch): i for i, batch in enumerate(batches)                                           │
+│   34 │   │   for future in as_completed(futures):                                                                                       │
+│ ❱ 35 │   │   │   idx, translations = future.result()                                                                                    │
+│   36 │   │   │   results[idx] = translations                                                                                            │
+│   37 │                                                                                                                                  │
+│   38 │   bilingual: list[BilingualSegment] = []                                                                                         │
+│                                                                                                                                         │
+│ /usr/lib/python3.12/concurrent/futures/_base.py:449 in result                                                                           │
+│                                                                                                                                         │
+│   446 │   │   │   │   if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:                                                            │
+│   447 │   │   │   │   │   raise CancelledError()                                                                                        │
+│   448 │   │   │   │   elif self._state == FINISHED:                                                                                     │
+│ ❱ 449 │   │   │   │   │   return self.__get_result()                                                                                    │
+│   450 │   │   │   │                                                                                                                     │
+│   451 │   │   │   │   self._condition.wait(timeout)                                                                                     │
+│   452                                                                                                                                   │
+│                                                                                                                                         │
+│ /usr/lib/python3.12/concurrent/futures/_base.py:401 in __get_result                                                                     │
+│                                                                                                                                         │
+│   398 │   def __get_result(self):                                                                                                       │
+│   399 │   │   if self._exception:                                                                                                       │
+│   400 │   │   │   try:                                                                                                                  │
+│ ❱ 401 │   │   │   │   raise self._exception                                                                                             │
+│   402 │   │   │   finally:                                                                                                              │
+│   403 │   │   │   │   # Break a reference cycle with the exception in self._exception                                                   │
+│   404 │   │   │   │   self = None                                                                                                       │
+│                                                                                                                                         │
+│ /usr/lib/python3.12/concurrent/futures/thread.py:58 in run                                                                              │
+│                                                                                                                                         │
+│    55 │   │   │   return                                                                                                                │
+│    56 │   │                                                                                                                             │
+│    57 │   │   try:                                                                                                                      │
+│ ❱  58 │   │   │   result = self.fn(*self.args, **self.kwargs)                                                                           │
+│    59 │   │   except BaseException as exc:                                                                                              │
+│    60 │   │   │   self.future.set_exception(exc)                                                                                        │
+│    61 │   │   │   # Break a reference cycle with the exception 'exc'                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/src/video_caption/nodes/translator.py:28 in _run                 │
+│                                                                                                                                         │
+│   25 │                                                                                                                                  │
+│   26 │   def _run(idx: int, batch: list[Segment]) -> tuple[int, list[str]]:                                                             │
+│   27 │   │   log.debug("Batch %d/%d started (%d segments)", idx + 1, len(batches), len(batch)                                           │
+│ ❱ 28 │   │   translations = _translate_batch(lm, batch, target_lang)                                                                    │
+│   29 │   │   log.debug("Batch %d/%d done", idx + 1, len(batches))                                                                       │
+│   30 │   │   return idx, translations                                                                                                   │
+│   31                                                                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/src/video_caption/nodes/translator.py:60 in _translate_batch     │
+│                                                                                                                                         │
+│   57 │   │   f"Keep the same number prefix. "                                                                                           │
+│   58 │   │   f"Output only the translated numbered lines, no extra text."                                                               │
+│   59 │   )                                                                                                                              │
+│ ❱ 60 │   response = lm.translate(numbered, target_lang, system_prompt=system)                                                           │
+│   61 │   translations = _parse_numbered(response, expected=len(batch))                                                                  │
+│   62 │                                                                                                                                  │
+│   63 │   if len(translations) != len(batch):                                                                                            │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/src/video_caption/clients/lm_studio.py:43 in translate           │
+│                                                                                                                                         │
+│   40 │   │   │   f"Output only the translated text, no explanations."                                                                   │
+│   41 │   │   )                                                                                                                          │
+│   42 │   │   messages = [SystemMessage(content=system), HumanMessage(content=text)]                                                     │
+│ ❱ 43 │   │   response = self._llm.invoke(messages)                                                                                      │
+│   44 │   │   return response.content.strip()                                                                                            │
+│   45                                                                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langchain_core/language_model │
+│ s/chat_models.py:454 in invoke                                                                                                          │
+│                                                                                                                                         │
+│    451 │   │   │   "AIMessage",                                                                                                         │
+│    452 │   │   │   cast(                                                                                                                │
+│    453 │   │   │   │   "ChatGeneration",                                                                                                │
+│ ❱  454 │   │   │   │   self.generate_prompt(                                                                                            │
+│    455 │   │   │   │   │   [self._convert_input(input)],                                                                                │
+│    456 │   │   │   │   │   stop=stop,                                                                                                   │
+│    457 │   │   │   │   │   callbacks=config.get("callbacks"),                                                                           │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langchain_core/language_model │
+│ s/chat_models.py:1185 in generate_prompt                                                                                                │
+│                                                                                                                                         │
+│   1182 │   │   **kwargs: Any,                                                                                                           │
+│   1183 │   ) -> LLMResult:                                                                                                              │
+│   1184 │   │   prompt_messages = [p.to_messages() for p in prompts]                                                                     │
+│ ❱ 1185 │   │   return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)                                          │
+│   1186 │                                                                                                                                │
+│   1187 │   @override                                                                                                                    │
+│   1188 │   async def agenerate_prompt(                                                                                                  │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langchain_core/language_model │
+│ s/chat_models.py:995 in generate                                                                                                        │
+│                                                                                                                                         │
+│    992 │   │   for i, m in enumerate(input_messages):                                                                                   │
+│    993 │   │   │   try:                                                                                                                 │
+│    994 │   │   │   │   results.append(                                                                                                  │
+│ ❱  995 │   │   │   │   │   self._generate_with_cache(                                                                                   │
+│    996 │   │   │   │   │   │   m,                                                                                                       │
+│    997 │   │   │   │   │   │   stop=stop,                                                                                               │
+│    998 │   │   │   │   │   │   run_manager=run_managers[i] if run_managers else None,                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langchain_core/language_model │
+│ s/chat_models.py:1297 in _generate_with_cache                                                                                           │
+│                                                                                                                                         │
+│   1294 │   │   │   │   chunks.append(chunk)                                                                                             │
+│   1295 │   │   │   result = generate_from_stream(iter(chunks))                                                                          │
+│   1296 │   │   elif inspect.signature(self._generate).parameters.get("run_manager"):                                                    │
+│ ❱ 1297 │   │   │   result = self._generate(                                                                                             │
+│   1298 │   │   │   │   messages, stop=stop, run_manager=run_manager, **kwargs                                                           │
+│   1299 │   │   │   )                                                                                                                    │
+│   1300 │   │   else:                                                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langchain_openai/chat_models/ │
+│ base.py:1503 in _generate                                                                                                               │
+│                                                                                                                                         │
+│   1500 │   │   except openai.BadRequestError as e:                                                                                      │
+│   1501 │   │   │   _handle_openai_bad_request(e)                                                                                        │
+│   1502 │   │   except openai.APIError as e:                                                                                             │
+│ ❱ 1503 │   │   │   _handle_openai_api_error(e)                                                                                          │
+│   1504 │   │   except Exception as e:                                                                                                   │
+│   1505 │   │   │   if raw_response is not None and hasattr(raw_response, "http_response"):                                              │
+│   1506 │   │   │   │   e.response = raw_response.http_response  # type: ignore[attr-defined]                                            │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langchain_openai/chat_models/ │
+│ base.py:1498 in _generate                                                                                                               │
+│                                                                                                                                         │
+│   1495 │   │   │   │   │   output_version=self.output_version,                                                                          │
+│   1496 │   │   │   │   )                                                                                                                │
+│   1497 │   │   │   else:                                                                                                                │
+│ ❱ 1498 │   │   │   │   raw_response = self.client.with_raw_response.create(**payload)                                                   │
+│   1499 │   │   │   │   response = raw_response.parse()                                                                                  │
+│   1500 │   │   except openai.BadRequestError as e:                                                                                      │
+│   1501 │   │   │   _handle_openai_bad_request(e)                                                                                        │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_legacy_response.py:36 │
+│ 7 in wrapped                                                                                                                            │
+│                                                                                                                                         │
+│   364 │   │                                                                                                                             │
+│   365 │   │   kwargs["extra_headers"] = extra_headers                                                                                   │
+│   366 │   │                                                                                                                             │
+│ ❱ 367 │   │   return cast(LegacyAPIResponse[R], func(*args, **kwargs))                                                                  │
+│   368 │                                                                                                                                 │
+│   369 │   return wrapped                                                                                                                │
+│   370                                                                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py:287   │
+│ in wrapper                                                                                                                              │
+│                                                                                                                                         │
+│   284 │   │   │   │   │   else:                                                                                                         │
+│   285 │   │   │   │   │   │   msg = f"Missing required argument: {quote(missing[0])}"                                                   │
+│   286 │   │   │   │   raise TypeError(msg)                                                                                              │
+│ ❱ 287 │   │   │   return func(*args, **kwargs)                                                                                          │
+│   288 │   │                                                                                                                             │
+│   289 │   │   return wrapper  # type: ignore                                                                                            │
+│   290                                                                                                                                   │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/resources/chat/complet │
+│ ions/completions.py:1211 in create                                                                                                      │
+│                                                                                                                                         │
+│   1208 │   │   timeout: float | httpx.Timeout | None | NotGiven = not_given,                                                            │
+│   1209 │   ) -> ChatCompletion | Stream[ChatCompletionChunk]:                                                                           │
+│   1210 │   │   validate_response_format(response_format)                                                                                │
+│ ❱ 1211 │   │   return self._post(                                                                                                       │
+│   1212 │   │   │   "/chat/completions",                                                                                                 │
+│   1213 │   │   │   body=maybe_transform(                                                                                                │
+│   1214 │   │   │   │   {                                                                                                                │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_base_client.py:1314   │
+│ in post                                                                                                                                 │
+│                                                                                                                                         │
+│   1311 │   │   opts = FinalRequestOptions.construct(                                                                                    │
+│   1312 │   │   │   method="post", url=path, json_data=body, content=content, files=to_httpx_fil                                         │
+│   1313 │   │   )                                                                                                                        │
+│ ❱ 1314 │   │   return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=str                                         │
+│   1315 │                                                                                                                                │
+│   1316 │   def patch(                                                                                                                   │
+│   1317 │   │   self,                                                                                                                    │
+│                                                                                                                                         │
+│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/openai/_base_client.py:1037   │
+│ in request                                                                                                                              │
+│                                                                                                                                         │
+│   1034 │   │   │   │   │   continue                                                                                                     │
+│   1035 │   │   │   │                                                                                                                    │
+│   1036 │   │   │   │   log.debug("Raising timeout error")                                                                               │
+│ ❱ 1037 │   │   │   │   raise APITimeoutError(request=request) from err                                                                  │
+│   1038 │   │   │   except OpenAIError as err:                                                                                           │
+│   1039 │   │   │   │   # Propagate OpenAIErrors as-is, without retrying or wrapping in APIConne                                         │
+│   1040 │   │   │   │   raise err                                                                                                        │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+APITimeoutError: Request timed out.
