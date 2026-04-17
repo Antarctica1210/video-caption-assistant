@@ -46,6 +46,11 @@ def _deduplicate(segments: list[Segment]) -> list[Segment]:
     result: list[Segment] = [segments[0]]
     for seg in segments[1:]:
         prev = result[-1]
+        if seg["text"] == prev["text"]:
+            # identical text from chunk overlap — keep the one with the longer span
+            if seg["end"] > prev["end"]:
+                result[-1] = {**prev, "end": seg["end"]}
+            continue
         if seg["start"] >= prev["end"]:
             result.append(seg)
         elif seg["end"] > prev["end"]:

@@ -42,6 +42,9 @@ class CaptionState(TypedDict, total=False):
     transcript_json_path: str | None
     transcript_csv_path: str | None
 
+    # --- cache ---
+    cache_hit: bool             # True if transcript already exists; skips extraction
+
     # --- final ---
     output_keys: list[str]
     error: str | None
