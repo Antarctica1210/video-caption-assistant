@@ -7,8 +7,9 @@ from ..state import BilingualSegment, CaptionState, Segment
 
 log = get_logger("video_caption.translator")
 
-BATCH_SIZE = 4    # segments per LM Studio request
-MAX_WORKERS = 4   # concurrent requests to LM Studio
+BATCH_SIZE = 10   # segments combined into one LM Studio request
+MAX_WORKERS = 4   # concurrent requests sent in parallel
+DELIMITER = "|||" # separator between translated lines in LLM response
 
 
 def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudioClient) -> dict:
@@ -17,7 +18,7 @@ def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudio
     total = len(segments)
     batches = [segments[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
     log.info(
-        "Translating %d segment(s) to '%s' — %d batch(es) x %d segments, %d parallel workers",
+        "Translating %d segment(s) → '%s' | %d batch(es) of %d | %d parallel workers",
         total, target_lang, len(batches), BATCH_SIZE, MAX_WORKERS,
     )
 
@@ -45,24 +46,25 @@ def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudio
                 "end": seg["end"],
             })
 
-    log.info("Translation complete — %d segment(s) translated in %d batch(es)", total, len(batches))
+    log.info("Translation complete — %d segment(s) in %d batch(es)", total, len(batches))
     return {"bilingual_segments": bilingual}
 
 
 def _translate_batch(lm: LMStudioClient, batch: list[Segment], target_lang: str) -> list[str]:
-    numbered = "\n".join(f"{i + 1}. {seg['text']}" for i, seg in enumerate(batch))
+    combined = f"\n{DELIMITER}\n".join(seg["text"] for seg in batch)
     system = (
         f"You are a professional subtitle translator. "
-        f"Translate each numbered line to {target_lang}. "
-        f"Keep the same number prefix. "
-        f"Output only the translated numbered lines, no extra text."
+        f"The input contains {len(batch)} subtitle lines separated by '{DELIMITER}'. "
+        f"Translate each line to {target_lang}. "
+        f"Return exactly {len(batch)} translated lines separated by '{DELIMITER}'. "
+        f"Preserve the order. Output only the translated lines, no extra text."
     )
-    response = lm.translate(numbered, target_lang, system_prompt=system)
-    translations = _parse_numbered(response, expected=len(batch))
+    response = lm.translate(combined, target_lang, system_prompt=system)
+    translations = _split_response(response, expected=len(batch))
 
     if len(translations) != len(batch):
         log.warning(
-            "Batch parse mismatch: expected %d, got %d — falling back to per-segment",
+            "Delimiter split mismatch: expected %d, got %d — falling back to per-segment",
             len(batch), len(translations),
         )
         return [lm.translate(seg["text"], target_lang) for seg in batch]
@@ -70,18 +72,7 @@ def _translate_batch(lm: LMStudioClient, batch: list[Segment], target_lang: str)
     return translations
 
 
-def _parse_numbered(text: str, expected: int) -> list[str]:
-    lines: list[str] = []
-    for line in text.strip().splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        # strip leading "N." or "N) " prefix
-        if line[0].isdigit():
-            dot = line.find(".")
-            paren = line.find(")")
-            sep = min(p for p in (dot, paren) if p != -1) if any(p != -1 for p in (dot, paren)) else -1
-            if sep != -1 and sep < 5:
-                line = line[sep + 1:].strip()
-        lines.append(line)
-    return lines if len(lines) == expected else lines
+def _split_response(text: str, expected: int) -> list[str]:
+    parts = [p.strip() for p in text.split(DELIMITER)]
+    parts = [p for p in parts if p]
+    return parts if len(parts) == expected else parts
