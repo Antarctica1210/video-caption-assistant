@@ -84,8 +84,8 @@ def _translate_batch(lm: LMStudioClient, batch: list[Segment], target_lang: str)
 
     if len(translations) != len(batch):
         log.warning(
-            "Delimiter split mismatch: expected %d, got %d — falling back to per-segment",
-            len(batch), len(translations),
+            "Delimiter split mismatch: expected %d, got %d — falling back to per-segment\nRaw response: %r",
+            len(batch), len(translations), response[:300],
         )
         return [lm.translate(seg["text"], target_lang) for seg in batch]
 
