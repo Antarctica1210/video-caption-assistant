@@ -16,7 +16,7 @@ class LMStudioClient:
         self.extra_body = {"enable_thinking": False}
         self._llm = ChatOpenAI(
             base_url=self.base_url,
-            api_key=api_key or "lm-studio",
+            api_key=api_key,
             model=model,
             temperature=0.3,
             max_tokens=512,
