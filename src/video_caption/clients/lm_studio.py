@@ -36,7 +36,8 @@ def _get_llm(
 
     model_kwargs: dict = {}
     if json_mode:
-        model_kwargs["response_format"] = {"type": "json_object"}
+        # LM Studio supports 'json_schema' or 'text' only — not 'json_object'
+        model_kwargs["response_format"] = {"type": "text"}
 
     try:
         llm = ChatOpenAI(
@@ -48,9 +49,11 @@ def _get_llm(
             timeout=timeout,
             max_retries=0,       # retries handled manually to catch openai-level errors
             model_kwargs=model_kwargs,
-        # .bind() attaches extra_body to every invocation — constructor-level extra_body
-        # is not reliably forwarded by all langchain-openai versions
-        ).bind(extra_body={"enable_thinking": False})
+            extra_body={
+                "enable_thinking": False,                        # top-level param (some LM Studio builds)
+                "chat_template_kwargs": {"enable_thinking": False},  # Qwen3 Jinja2 template param
+            },
+        )
     except Exception as e:
         raise RuntimeError(f"LLM client initialisation failed for model [{model}]: {e}") from e
 
@@ -98,7 +101,15 @@ class LMStudioClient:
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = llm.invoke(messages)
-                return response.content.strip()
+                content = response.content.strip()
+                if content:
+                    return content
+                # Qwen3 thinking still active — content is empty, answer leaked into reasoning_content
+                reasoning = response.additional_kwargs.get("reasoning_content", "").strip()
+                if reasoning:
+                    log.warning("content empty — extracting from reasoning_content (thinking not disabled)")
+                    return reasoning
+                raise ValueError("LM Studio returned empty content and no reasoning_content")
             except (openai.APITimeoutError, httpx.TimeoutException) as e:
                 last_exc = e
                 log.warning(
