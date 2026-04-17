@@ -13,7 +13,7 @@ def upload_outputs(state: CaptionState, app_config: AppConfig, minio: MinIOClien
     bucket = app_config.minio.output_bucket
     keys: list[str] = []
 
-    for field in ("srt_path", "ass_path", "transcript_json_path", "transcript_csv_path"):
+    for field in ("srt_path", "ass_path"):
         path_str = state.get(field)  # type: ignore[literal-required]
         if path_str:
             src = Path(path_str)
