@@ -87,7 +87,17 @@ def _translate_batch(lm: LMStudioClient, batch: list[Segment], target_lang: str)
             "Delimiter split mismatch: expected %d, got %d — falling back to per-segment\nRaw response: %r",
             len(batch), len(translations), response[:300],
         )
-        return [lm.translate(seg["text"], target_lang) for seg in batch]
+        results = []
+        for seg in batch:
+            try:
+                results.append(lm.translate(seg["text"], target_lang))
+            except Exception as e:
+                log.error(
+                    "Per-segment translation failed, keeping original text: %r — %s",
+                    seg["text"][:80], e,
+                )
+                results.append(seg["text"])
+        return results
 
     return translations
 
