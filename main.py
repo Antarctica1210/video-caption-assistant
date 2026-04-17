@@ -1,14 +1,16 @@
 import typer
 
-from src.video_caption.config import load_config
+from src.video_caption.clients.minio_client import MinIOClient
+from src.video_caption.config import AppConfig, load_config
 from src.video_caption.graph import build_graph, CaptionState
+
+_VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".flv", ".m4v"}
 
 app = typer.Typer(help="Video caption assistant — transcribe, translate, and export captions.")
 
 
 @app.command()
 def run(
-    video: str = typer.Argument(..., help="MinIO object key in the video_input bucket (e.g. my_video.mp4)"),
     lang: str = typer.Option("zh", "--lang", "-l", help="Target language code (e.g. zh, en, es, fr, ja)"),
     fmt: str = typer.Option("both", "--format", "-f", help="Output format: srt | ass | both"),
     title: str | None = typer.Option(None, "--title", "-t", help="Video title to translate and prepend"),
@@ -21,10 +23,18 @@ def run(
         typer.echo(f"[error] Cannot reach LM Studio at {cfg.lm_studio.base_url}", err=True)
         raise typer.Exit(code=1)
 
+    minio = MinIOClient(
+        endpoint=cfg.minio.endpoint,
+        access_key=cfg.minio.access_key,
+        secret_key=cfg.minio.secret_key,
+        secure=cfg.minio.secure,
+    )
+    video_key = _detect_video(minio, cfg)
+
     graph = build_graph(cfg)
 
     initial_state = CaptionState(
-        video_key=video,
+        video_key=video_key,
         target_lang=lang,
         output_format=fmt,
         title=title,
@@ -34,7 +44,7 @@ def run(
         output_keys=[],
     )
 
-    typer.echo(f"Processing {video!r} → {lang} ({fmt})")
+    typer.echo(f"Processing {video_key!r} → {lang} ({fmt})")
     result = graph.invoke(initial_state)
 
     if result.get("error"):
@@ -44,6 +54,31 @@ def run(
     typer.echo("Done. Files uploaded to MinIO video-output:")
     for key in result.get("output_keys", []):
         typer.echo(f"  {key}")
+
+
+def _detect_video(minio: MinIOClient, cfg: AppConfig) -> str:
+    minio.ensure_bucket(cfg.minio.input_bucket)
+    all_keys = minio.list_objects(cfg.minio.input_bucket)
+    videos = [k for k in all_keys if any(k.lower().endswith(ext) for ext in _VIDEO_EXTENSIONS)]
+
+    if not videos:
+        typer.echo(
+            f"[error] No video found in '{cfg.minio.input_bucket}' bucket. "
+            f"Upload a video file ({', '.join(_VIDEO_EXTENSIONS)}) and try again.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    if len(videos) > 1:
+        typer.echo(
+            f"[error] Multiple videos found in '{cfg.minio.input_bucket}' bucket:\n"
+            + "\n".join(f"  {v}" for v in videos)
+            + "\nKeep only one video and try again.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    return videos[0]
 
 
 def _check_lm_studio(base_url: str) -> bool:

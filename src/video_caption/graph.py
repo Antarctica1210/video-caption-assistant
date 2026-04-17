@@ -1,6 +1,6 @@
 from functools import partial
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
 
 from .clients.lm_studio import LMStudioClient
 from .clients.minio_client import MinIOClient
@@ -16,9 +16,9 @@ def build_graph(config: AppConfig):
     lm = LMStudioClient(
         base_url=config.lm_studio.base_url,
         model=config.lm_studio.model,
+        api_key=config.lm_studio.api_key,
         timeout=config.lm_studio.timeout,
         max_retries=config.lm_studio.max_retries,
-        
     )
     minio = MinIOClient(
         endpoint=config.minio.endpoint,
@@ -52,6 +52,6 @@ def build_graph(config: AppConfig):
     g.add_edge("validate_timeline",  "export_srt")
     g.add_edge("export_srt",         "export_ass")
     g.add_edge("export_ass",         "upload_outputs")
-    g.add_edge("upload_outputs",     END)
+    g.set_finish_point("upload_outputs")
 
     return g.compile()

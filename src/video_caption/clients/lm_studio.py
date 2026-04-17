@@ -1,13 +1,29 @@
 import httpx
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 
 
 class LMStudioClient:
-    def __init__(self, base_url: str, model: str, timeout: int = 60, max_retries: int = 3):
+    def __init__(
+        self,
+        base_url: str,
+        model: str,
+        api_key: str | None = None,
+        timeout: int = 60,
+        max_retries: int = 3,
+    ):
         self.base_url = base_url.rstrip("/")
-        self.model = model
-        self.timeout = timeout
-        self.max_retries = max_retries
         self.extra_body = {"enable_thinking": False}
+        self._llm = ChatOpenAI(
+            base_url=self.base_url,
+            api_key=api_key or "lm-studio",
+            model=model,
+            temperature=0.3,
+            max_tokens=512,
+            timeout=timeout,
+            max_retries=max_retries,
+            extra_body=self.extra_body,
+        )
 
     def health_check(self) -> bool:
         try:
@@ -23,27 +39,6 @@ class LMStudioClient:
             f"Preserve the original tone and brevity. "
             f"Output only the translated text, no explanations."
         )
-
-        last_exc: Exception | None = None
-        for _ in range(self.max_retries):
-            try:
-                r = httpx.post(
-                    f"{self.base_url}/chat/completions",
-                    json={
-                        "model": self.model,
-                        "messages": [
-                            {"role": "system", "content": system},
-                            {"role": "user", "content": text},
-                        ],
-                        "temperature": 0.3,
-                        "max_tokens": 512,
-                        **self.extra_body,
-                    },
-                    timeout=self.timeout,
-                )
-                r.raise_for_status()
-                return r.json()["choices"][0]["message"]["content"].strip()
-            except (httpx.TimeoutException, httpx.ConnectError) as e:
-                last_exc = e
-
-        raise RuntimeError(f"LM Studio translation failed after {self.max_retries} retries") from last_exc
+        messages = [SystemMessage(content=system), HumanMessage(content=text)]
+        response = self._llm.invoke(messages)
+        return response.content.strip()
