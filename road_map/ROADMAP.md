@@ -210,10 +210,10 @@ docker compose up -d
 flowchart TD
     MI[(MinIO\nvideo-input)] -->|auto-detected| A
 
-    subgraph Graph 1 — Transcription
+    subgraph G1["Graph 1 - Transcription"]
         A[check_cache]
-        A -->|cache hit — transcript.json exists| DONE1([END])
-        A -->|cache miss| B[fetch_and_extract\ndownload + ffmpeg → WAV]
+        A -->|"cache hit - transcript.json exists"| DONE1([END])
+        A -->|cache miss| B["fetch_and_extract\ndownload + ffmpeg → WAV"]
         B --> C[chunk_audio\noverlapping chunks]
         C --> D1[transcribe chunk 1\nfaster-whisper]
         C --> D2[transcribe chunk 2\nfaster-whisper]
@@ -224,7 +224,7 @@ flowchart TD
 
     DONE1 -->|transcript.json| F
 
-    subgraph Graph 2 — Translation and Export
+    subgraph G2["Graph 2 - Translation and Export"]
         F[load_transcript\nread segments from JSON]
         F --> G[translate_title\nLM Studio LAN]
         F --> H[translate_segments\nbatch 10 segs x 4 parallel]
@@ -234,18 +234,18 @@ flowchart TD
         J & K --> L[upload_outputs\npush to MinIO video-output]
     end
 
-    subgraph LAN Infrastructure
+    subgraph LAN["LAN Infrastructure"]
         Q[(LM Studio\n192.168.x.x:1234)]
         MO[(MinIO\nvideo-output)]
     end
 
-    H -->|10 segs as ||| delimited block| Q
+    H -->|"10 segs as pipe-delimited block"| Q
     G -->|title text| Q
-    L -->|SRT, ASS, JSON, CSV| MO
+    L -->|"SRT, ASS, JSON, CSV"| MO
 
-    style Graph 1 — Transcription fill:#f0fdf4,stroke:#16a34a
-    style Graph 2 — Translation and Export fill:#f0f4ff,stroke:#6b7280
-    style LAN Infrastructure fill:#fff7ed,stroke:#ea580c
+    style G1 fill:#f0fdf4,stroke:#16a34a
+    style G2 fill:#f0f4ff,stroke:#6b7280
+    style LAN fill:#fff7ed,stroke:#ea580c
 ```
 
 ---

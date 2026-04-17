@@ -5,9 +5,10 @@ description = "Offline-first video caption assistant powered by LangGraph, faste
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "langgraph>=0.2",
-    "langchain>=0.3",
-    "langchain-openai>=0.2",
+    "langchain>=1.2.15",
+    "langchain-community>=0.4.1",
+    "langchain-openai>=1.1.12",
+    "langgraph>=1.1.6",
     "faster-whisper>=1.0",
     "ffmpeg-python>=0.2",
     "minio>=7.2",
