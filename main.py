@@ -3,6 +3,10 @@ import typer
 from src.video_caption.clients.minio_client import MinIOClient
 from src.video_caption.config import AppConfig, load_config
 from src.video_caption.graph import build_graph, CaptionState
+from src.video_caption.logger import get_logger, setup_logging
+
+setup_logging()
+log = get_logger("video_caption.main")
 
 _VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".flv", ".m4v"}
 
@@ -44,13 +48,16 @@ def run(
         output_keys=[],
     )
 
+    log.info("Starting pipeline: video=%r lang=%s format=%s", video_key, lang, fmt)
     typer.echo(f"Processing {video_key!r} → {lang} ({fmt})")
     result = graph.invoke(initial_state)
 
     if result.get("error"):
+        log.error("Pipeline failed: %s", result["error"])
         typer.echo(f"[error] {result['error']}", err=True)
         raise typer.Exit(code=1)
 
+    log.info("Pipeline complete — %d output file(s)", len(result.get("output_keys", [])))
     typer.echo("Done. Files uploaded to MinIO video-output:")
     for key in result.get("output_keys", []):
         typer.echo(f"  {key}")

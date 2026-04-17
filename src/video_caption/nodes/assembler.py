@@ -3,11 +3,19 @@ import json
 from pathlib import Path
 
 from ..config import AppConfig
+from ..logger import get_logger
 from ..state import CaptionState, Segment
+
+log = get_logger("video_caption.assembler")
 
 
 def merge_and_save(state: CaptionState, config: AppConfig) -> dict:
+    before = len(state["raw_segments"])
     segments = _deduplicate(state["raw_segments"])
+    after = len(segments)
+
+    if before != after:
+        log.info("Deduplicated segments: %d → %d", before, after)
 
     stem = Path(state["local_video_path"]).stem
     out_dir = Path(config.temp_dir) / "output" / stem
@@ -17,11 +25,13 @@ def merge_and_save(state: CaptionState, config: AppConfig) -> dict:
     csv_path = out_dir / "transcript.csv"
 
     json_path.write_text(json.dumps(segments, ensure_ascii=False, indent=2), encoding="utf-8")
+    log.info("Saved transcript JSON → %s", json_path)
 
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["start", "end", "text"])
         writer.writeheader()
         writer.writerows(segments)
+    log.info("Saved transcript CSV  → %s", csv_path)
 
     return {
         "raw_segments": segments,
