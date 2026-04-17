@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
 from faster_whisper import WhisperModel
 
@@ -15,15 +16,19 @@ def _get_model(app_config: AppConfig) -> WhisperModel:
     global _model
     if _model is None:
         log.info(
-            "Loading faster-whisper model '%s' on %s (%s)",
+            "Loading faster-whisper model '%s' on %s (%s), download_root=%s",
             app_config.whisper.model_size,
             app_config.whisper.device,
             app_config.whisper.compute_type,
+            app_config.whisper.download_root,
         )
+        download_root = Path(app_config.whisper.download_root)
+        download_root.mkdir(parents=True, exist_ok=True)
         _model = WhisperModel(
             app_config.whisper.model_size,
             device=app_config.whisper.device,
             compute_type=app_config.whisper.compute_type,
+            download_root=str(download_root),
         )
         log.info("Model loaded")
     return _model

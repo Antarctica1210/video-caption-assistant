@@ -30,6 +30,7 @@ class WhisperConfig:
     model_size: str
     device: str
     compute_type: str
+    download_root: str
 
 
 @dataclass
@@ -75,6 +76,7 @@ def load_config(path: str = "config.toml") -> AppConfig:
         ),
         whisper=WhisperConfig(
             model_size=os.getenv("WHISPER_MODEL_SIZE", w.get("model_size", "medium")),
+            download_root=os.getenv("WHISPER_DOWNLOAD_ROOT", w.get("download_root", "./models/faster-whisper")),
             **_whisper_device_settings(),
         ),
         chunk_duration=p.get("chunk_duration", 300),
