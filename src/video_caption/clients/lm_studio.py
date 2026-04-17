@@ -88,7 +88,7 @@ class LMStudioClient:
         except Exception:
             return False
 
-    def translate(self, text: str, target_lang: str, system_prompt: Optional[str] = None) -> str:
+    def translate(self, text: str, target_lang: str, system_prompt: Optional[str] = None) -> list[dict]:
         system = system_prompt or (
             f"You are a professional subtitle translator. "
             f"Translate the following subtitle line to {target_lang}. "
@@ -102,14 +102,14 @@ class LMStudioClient:
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = llm.invoke(messages)
-                content = response.content
+                content = response.content.strip()
                 if content:
-                    return content
+                    return [{"text": content}]
                 # Qwen3 thinking still active — content is empty, answer leaked into reasoning_content
                 reasoning = response.additional_kwargs.get("reasoning_content", "").strip()
                 if reasoning:
                     log.warning("content empty — extracting from reasoning_content (thinking not disabled)")
-                    return reasoning
+                    return [{"text": reasoning}]
                 raise ValueError("LM Studio returned empty content and no reasoning_content")
             except (openai.APITimeoutError, httpx.TimeoutException) as e:
                 last_exc = e
