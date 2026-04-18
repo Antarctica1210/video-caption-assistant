@@ -14,7 +14,7 @@ def translate_title(state: CaptionState, lm: LMStudioClient) -> dict:
     # Use explicitly provided title, or fall back to the video filename stem
     raw_title = state.get("title") or Path(state["video_key"]).stem
     log.info("Translating title: %r", raw_title)
-    translated = lm.translate(raw_title, state["target_lang"])[0].get("text", "").strip()
+    translated = lm.translate(raw_title, state["target_lang"]).get("text", "").strip()
     combined = f"{raw_title} | {translated}"
     log.info("Title result: %r", combined)
     return {"translated_title": combined}
