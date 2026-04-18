@@ -98,7 +98,7 @@ def _translate_batch(lm: LMStudioClient, items: list[dict], target_lang: str) ->
     out: dict[int, str] = {}
     for item in items:
         try:
-            translated = lm.translate(item["text"], target_lang)[0].get("text", "").strip()
+            translated = lm.translate(item["text"], target_lang).strip()
             out[item["id"]] = translated or item["text"]
         except Exception as e:
             log.error("Per-item fallback failed for id=%d: %s — keeping original", item["id"], e)
