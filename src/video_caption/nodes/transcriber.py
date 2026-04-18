@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from faster_whisper import WhisperModel
@@ -37,12 +36,15 @@ def _get_model(app_config: AppConfig) -> WhisperModel:
 def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
     model = _get_model(app_config)
     chunks = state["audio_chunks"]
-    log.info("Transcribing %d chunk(s) in parallel", len(chunks))
+    total = len(chunks)
+    log.info("Transcribing %d chunk(s) sequentially", total)
 
-    results: dict[int, list[Segment]] = {}
-
-    def _transcribe_one(chunk: AudioChunk) -> tuple[int, list[Segment]]:
-        log.debug("Transcribing chunk %04d (%.1fs–%.1fs)", chunk["index"], chunk["start"], chunk["end"])
+    # Sequential — CTranslate2 is not thread-safe; the GPU runs one session at a
+    # time anyway so parallelism here gives no throughput benefit and risks
+    # corrupting internal model state when chunks share the same model instance.
+    ordered: list[Segment] = []
+    for chunk in sorted(chunks, key=lambda c: c["index"]):
+        log.debug("Transcribing chunk %04d/%04d (%.1fs–%.1fs)", chunk["index"] + 1, total, chunk["start"], chunk["end"])
         segments, _ = model.transcribe(chunk["path"], word_timestamps=True)
         segs: list[Segment] = [
             {
@@ -53,15 +55,8 @@ def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
             for s in segments
             if s.text.strip()
         ]
-        log.debug("Chunk %04d → %d segment(s)", chunk["index"], len(segs))
-        return chunk["index"], segs
+        log.debug("Chunk %04d → %d segment(s)", chunk["index"] + 1, len(segs))
+        ordered.extend(segs)
 
-    with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(_transcribe_one, c): c for c in chunks}
-        for future in as_completed(futures):
-            idx, segs = future.result()
-            results[idx] = segs
-
-    ordered = [seg for idx in sorted(results) for seg in results[idx]]
     log.info("Transcription complete — %d segment(s) total", len(ordered))
     return {"raw_segments": ordered}
