@@ -49,16 +49,22 @@ uv run main.py run --lang zh
 
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
-| `--lang` | `-l` | `zh` | Target language code (`zh`, `en`, `es`, `fr`, `ja`, …) |
+| `--lang` | `-l` | `zh` | Target translation language (`zh`, `en`, `es`, `fr`, `ja`, …) |
+| `--source` | `-s` | *(auto-detect)* | Source audio language hint for Whisper (`ja`, `en`, `zh`, …) |
 | `--format` | `-f` | `both` | Output format: `srt`, `ass`, or `both` |
 | `--title` | `-t` | *(auto)* | Override video title (defaults to filename stem) |
 | `--config` | `-c` | `config.toml` | Path to config file |
+
+> **`--source`**: If you already know the video's spoken language, providing it skips Whisper's auto-detection and can improve accuracy. Omit it to let Whisper detect the language automatically.
 
 **Examples:**
 
 ```bash
 # Translate to Chinese, export both SRT and ASS (default)
 uv run main.py run --lang zh
+
+# Source is Japanese — skip auto-detection, translate to Chinese
+uv run main.py run --lang zh --source ja
 
 # Translate to Spanish, SRT only
 uv run main.py run --lang es --format srt
