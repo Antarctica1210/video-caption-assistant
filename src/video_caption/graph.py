@@ -5,7 +5,7 @@ from langgraph.graph import END, StateGraph
 from .clients.lm_studio import LMStudioClient
 from .clients.minio_client import MinIOClient
 from .config import AppConfig
-from .nodes import assembler, check_cache, chunker, extractor, load_transcript, translator, uploader, validator
+from .nodes import assembler, check_cache, extractor, load_transcript, translator, uploader, validator
 from .nodes import title as title_node
 from .nodes.exporters import ass, srt
 from .nodes.transcriber import transcribe_chunks
@@ -32,7 +32,6 @@ def build_transcription_graph(app_config: AppConfig):
 
     g.add_node("check_cache",       partial(check_cache, app_config=app_config))
     g.add_node("fetch_and_extract", partial(extractor.fetch_and_extract, app_config=app_config, minio=minio))
-    g.add_node("chunk_audio",       partial(chunker.chunk_audio, app_config=app_config))
     g.add_node("transcribe_chunks", partial(transcribe_chunks, app_config=app_config))
     g.add_node("merge_and_save",    partial(assembler.merge_and_save, app_config=app_config))
 
@@ -41,8 +40,7 @@ def build_transcription_graph(app_config: AppConfig):
         "check_cache",
         lambda s: END if s.get("cache_hit") else "fetch_and_extract",
     )
-    g.add_edge("fetch_and_extract", "chunk_audio")
-    g.add_edge("chunk_audio",       "transcribe_chunks")
+    g.add_edge("fetch_and_extract", "transcribe_chunks")
     g.add_edge("transcribe_chunks", "merge_and_save")
     g.add_edge("merge_and_save",    END)
 

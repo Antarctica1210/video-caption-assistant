@@ -4,7 +4,7 @@ from faster_whisper import WhisperModel
 
 from ..config import AppConfig
 from ..logger import get_logger
-from ..state import AudioChunk, CaptionState, Segment
+from ..state import CaptionState, Segment
 
 log = get_logger("video_caption.transcriber")
 
@@ -35,28 +35,24 @@ def _get_model(app_config: AppConfig) -> WhisperModel:
 
 def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
     model = _get_model(app_config)
-    chunks = state["audio_chunks"]
-    total = len(chunks)
-    log.info("Transcribing %d chunk(s) sequentially", total)
+    audio_path = state["local_audio_path"]
+    log.info("Transcribing full audio: %s", audio_path)
 
-    # Sequential — CTranslate2 is not thread-safe; the GPU runs one session at a
-    # time anyway so parallelism here gives no throughput benefit and risks
-    # corrupting internal model state when chunks share the same model instance.
-    ordered: list[Segment] = []
-    for chunk in sorted(chunks, key=lambda c: c["index"]):
-        log.debug("Transcribing chunk %04d/%04d (%.1fs–%.1fs)", chunk["index"] + 1, total, chunk["start"], chunk["end"])
-        segments, _ = model.transcribe(chunk["path"], word_timestamps=True)
-        segs: list[Segment] = [
-            {
-                "text": s.text.strip(),
-                "start": round(s.start + chunk["start"], 3),
-                "end": round(s.end + chunk["start"], 3),
-            }
-            for s in segments
-            if s.text.strip()
-        ]
-        log.debug("Chunk %04d → %d segment(s)", chunk["index"] + 1, len(segs))
-        ordered.extend(segs)
+    # Transcribe the full WAV in one pass — no chunking, no overlap, no duplicate
+    # segments at boundaries. faster-whisper streams internally so VRAM usage is
+    # bounded regardless of audio length.
+    raw_segments, info = model.transcribe(audio_path, word_timestamps=True)
+    log.info("Detected language: %s (%.0f%% confidence)", info.language, info.language_probability * 100)
 
-    log.info("Transcription complete — %d segment(s) total", len(ordered))
-    return {"raw_segments": ordered}
+    segments: list[Segment] = [
+        {
+            "text": s.text.strip(),
+            "start": round(s.start, 3),
+            "end": round(s.end, 3),
+        }
+        for s in raw_segments
+        if s.text.strip()
+    ]
+
+    log.info("Transcription complete — %d segment(s)", len(segments))
+    return {"raw_segments": segments}
