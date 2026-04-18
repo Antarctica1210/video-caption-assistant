@@ -19,7 +19,7 @@ def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudio
     segments = state["raw_segments"]
     total = len(segments)
 
-    checkpoint = _checkpoint_path(state["transcript_json_path"], target_lang)
+    checkpoint = _checkpoint_path(state["transcript_jsonl_path"], target_lang)
     results: dict[int, str] = _load_checkpoint(checkpoint)
 
     pending = [seg for seg in segments if seg.get("id", -1) not in results]
@@ -135,8 +135,8 @@ def _suspicious_length(src: str, tgt: str) -> bool:
     return ratio > 3.0 or ratio < 0.2
 
 
-def _checkpoint_path(transcript_json_path: str, target_lang: str) -> Path:
-    return Path(transcript_json_path).parent / f"translation_checkpoint_{target_lang}.json"
+def _checkpoint_path(transcript_jsonl_path: str, target_lang: str) -> Path:
+    return Path(transcript_jsonl_path).parent / f"translation_checkpoint_{target_lang}.json"
 
 
 def _load_checkpoint(path: Path) -> dict[int, str]:

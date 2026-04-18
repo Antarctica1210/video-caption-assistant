@@ -51,6 +51,7 @@ uv run main.py run --lang zh
 |--------|-------|---------|-------------|
 | `--lang` | `-l` | `zh` | Target translation language (`zh`, `en`, `es`, `fr`, `ja`, …) |
 | `--source` | `-s` | *(auto-detect)* | Source audio language hint for Whisper (`ja`, `en`, `zh`, …) |
+| `--fast-mode` | | `false` | Use `large-v3-turbo` (~4× faster, slightly lower accuracy) |
 | `--format` | `-f` | `both` | Output format: `srt`, `ass`, or `both` |
 | `--title` | `-t` | *(auto)* | Override video title (defaults to filename stem) |
 | `--config` | `-c` | `config.toml` | Path to config file |
@@ -65,6 +66,9 @@ uv run main.py run --lang zh
 
 # Source is Japanese — skip auto-detection, translate to Chinese
 uv run main.py run --lang zh --source ja
+
+# Fast mode — use large-v3-turbo for quicker transcription
+uv run main.py run --lang zh --fast-mode
 
 # Translate to Spanish, SRT only
 uv run main.py run --lang es --format srt

@@ -1,4 +1,3 @@
-import csv
 import json
 from pathlib import Path
 
@@ -12,7 +11,6 @@ log = get_logger("video_caption.assembler")
 def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
     before = len(state["raw_segments"])
     segments = _deduplicate(state["raw_segments"])
-    # Reassign sequential ids after dedup so ids remain contiguous
     for i, seg in enumerate(segments):
         seg["id"] = i
     after = len(segments)
@@ -24,22 +22,15 @@ def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
     out_dir = Path(app_config.temp_dir) / stem / "output"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    json_path = out_dir / "transcript.json"
-    csv_path = out_dir / "transcript.csv"
-
-    json_path.write_text(json.dumps(segments, ensure_ascii=False, indent=2), encoding="utf-8")
-    log.info("Saved transcript JSON → %s", json_path)
-
-    with csv_path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["id", "start", "end", "text"])
-        writer.writeheader()
-        writer.writerows(segments)
-    log.info("Saved transcript CSV  → %s", csv_path)
+    jsonl_path = out_dir / "transcript.jsonl"
+    with jsonl_path.open("w", encoding="utf-8") as f:
+        for seg in segments:
+            f.write(json.dumps(seg, ensure_ascii=False) + "\n")
+    log.info("Saved transcript JSONL → %s (%d segments)", jsonl_path, len(segments))
 
     return {
         "raw_segments": segments,
-        "transcript_json_path": str(json_path),
-        "transcript_csv_path": str(csv_path),
+        "transcript_jsonl_path": str(jsonl_path),
     }
 
 
@@ -50,7 +41,6 @@ def _deduplicate(segments: list[Segment]) -> list[Segment]:
     for seg in segments[1:]:
         prev = result[-1]
         if seg["text"] == prev["text"]:
-            # identical text from chunk overlap — keep the one with the longer span
             if seg["end"] > prev["end"]:
                 result[-1] = {**prev, "end": seg["end"]}
             continue
