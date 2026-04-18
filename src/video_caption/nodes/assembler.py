@@ -18,7 +18,7 @@ def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
         log.info("Deduplicated segments: %d → %d", before, after)
 
     stem = Path(state["local_video_path"]).stem
-    out_dir = Path(app_config.temp_dir) / "output" / stem
+    out_dir = Path(app_config.temp_dir) / stem / "output"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     json_path = out_dir / "transcript.json"

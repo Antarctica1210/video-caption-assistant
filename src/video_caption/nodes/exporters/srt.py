@@ -7,7 +7,7 @@ from ..title import TITLE_END, TITLE_START
 
 def export_srt(state: CaptionState, app_config: AppConfig) -> dict:
     stem = Path(state["local_video_path"]).stem
-    out_dir = Path(app_config.temp_dir) / "output" / stem
+    out_dir = Path(app_config.temp_dir) / stem / "output"
     srt_path = out_dir / f"{stem}.srt"
 
     blocks: list[str] = []

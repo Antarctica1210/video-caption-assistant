@@ -10,7 +10,7 @@ log = get_logger("video_caption.cache_check")
 
 def check_cache(state: CaptionState, app_config: AppConfig) -> dict:
     stem = Path(state["video_key"]).stem
-    out_dir = Path(app_config.temp_dir) / "output" / stem
+    out_dir = Path(app_config.temp_dir) / stem / "output"
     json_path = out_dir / "transcript.json"
     csv_path = out_dir / "transcript.csv"
 
@@ -24,7 +24,7 @@ def check_cache(state: CaptionState, app_config: AppConfig) -> dict:
             "transcript_json_path": str(json_path),
             "transcript_csv_path": str(csv_path),
             # set a synthetic local_video_path so downstream nodes can derive the stem
-            "local_video_path": str(Path(app_config.temp_dir) / "input" / Path(state["video_key"]).name),
+            "local_video_path": str(Path(app_config.temp_dir) / stem / "input" / Path(state["video_key"]).name),
         }
 
     log.info("No cache found at %s — running full pipeline", out_dir)

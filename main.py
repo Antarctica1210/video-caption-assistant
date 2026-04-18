@@ -105,6 +105,22 @@ def _detect_video(minio: MinIOClient, cfg: AppConfig) -> str:
     return videos[0]
 
 
+@app.command()
+def delete(
+    name: str = typer.Argument(..., help="Video stem to delete from tmp (e.g. 'my_video')"),
+    config_path: str = typer.Option("config.toml", "--config", "-c", help="Path to config.toml"),
+):
+    """Delete a video's tmp folder and all its contents (input, audio, output)."""
+    import shutil
+    cfg = load_config(config_path)
+    target = Path(cfg.temp_dir) / name
+    if not target.exists():
+        typer.echo(f"[error] No tmp folder found for '{name}' at {target}", err=True)
+        raise typer.Exit(code=1)
+    shutil.rmtree(target)
+    typer.echo(f"Deleted {target}")
+
+
 def _check_lm_studio(base_url: str) -> bool:
     import httpx
     url = f"{base_url.rstrip('/')}/models"
