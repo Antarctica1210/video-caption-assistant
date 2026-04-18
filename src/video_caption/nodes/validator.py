@@ -3,8 +3,9 @@ from ..state import BilingualSegment, CaptionState
 
 log = get_logger("video_caption.validator")
 
-MAX_CAPTION_DURATION = 10.0
-MAX_CPS = 15.0  # characters per second — above this subtitles are too fast to read
+MAX_CAPTION_DURATION = 10.0  # seconds — clamp overly long segments
+MIN_SEGMENT_DURATION = 0.8   # seconds — extend segments that are too short to read
+MAX_CPS = 15.0               # characters per second — above this subtitles are too fast to read
 
 
 def validate_timeline(state: CaptionState) -> dict:
@@ -13,18 +14,27 @@ def validate_timeline(state: CaptionState) -> dict:
     clamped = 0
     overlaps = 0
     fast_read = 0
+    extended = 0
 
     for seg in segments:
         start = seg["start"]
         end = seg["end"]
 
+        # Clamp segments that are too long
         if end - start > MAX_CAPTION_DURATION:
             end = start + MAX_CAPTION_DURATION
             clamped += 1
 
+        # Fix overlaps with the previous segment
         if fixed and start < fixed[-1]["end"]:
             start = fixed[-1]["end"]
             overlaps += 1
+
+        # Extend segments that are too short to be readable
+        if end - start < MIN_SEGMENT_DURATION:
+            next_start = fixed[-1]["end"] if fixed else start
+            end = max(end, start + MIN_SEGMENT_DURATION)
+            extended += 1
 
         if end > start:
             fixed.append({**seg, "start": round(start, 3), "end": round(end, 3)})
@@ -38,6 +48,8 @@ def validate_timeline(state: CaptionState) -> dict:
 
     if clamped:
         log.warning("Clamped %d segment(s) exceeding max duration (%.1fs)", clamped, MAX_CAPTION_DURATION)
+    if extended:
+        log.warning("Extended %d segment(s) below min duration (%.1fs)", extended, MIN_SEGMENT_DURATION)
     if overlaps:
         log.warning("Fixed %d overlapping segment(s)", overlaps)
     if fast_read:
