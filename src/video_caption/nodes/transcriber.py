@@ -48,16 +48,19 @@ def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
         "no_speech_threshold": app_config.whisper.no_speech_threshold,
         "log_prob_threshold": app_config.whisper.log_prob_threshold,
         "condition_on_previous_text": app_config.whisper.condition_on_previous_text,
+        "vad_filter": app_config.whisper.vad_filter,
     }
     if source_lang:
         transcribe_kwargs["language"] = source_lang
         log.info("Source language hint: %s", source_lang)
     log.info(
-        "Transcribe settings: beam_size=%d no_speech_threshold=%.2f log_prob_threshold=%.2f condition_on_previous_text=%s",
+        "Transcribe settings: beam_size=%d no_speech_threshold=%.2f log_prob_threshold=%.2f "
+        "condition_on_previous_text=%s vad_filter=%s",
         app_config.whisper.beam_size,
         app_config.whisper.no_speech_threshold,
         app_config.whisper.log_prob_threshold,
         app_config.whisper.condition_on_previous_text,
+        app_config.whisper.vad_filter,
     )
 
     stem = Path(state["local_video_path"]).stem

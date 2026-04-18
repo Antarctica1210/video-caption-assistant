@@ -35,6 +35,13 @@ beam_size = 5
 #   a hallucination loop in one window can make Whisper think it's done.
 condition_on_previous_text = true
 
+# vad_filter — run Silero VAD before transcribing to detect speech regions.
+#   Whisper only processes segments VAD identifies as speech, skipping silence
+#   entirely. This prevents long silent gaps (music, pauses) from poisoning
+#   Whisper's context and causing speech after the gap to be missed.
+#   Recommended: true — especially for videos with long non-speech sections.
+vad_filter = true
+
 # fast_model_size — model used when --fast-mode flag is passed.
 #   Approx 4× faster than large-v3 with minimal quality loss for most content.
 fast_model_size = "deepdml/faster-whisper-large-v3-turbo-ct2"
