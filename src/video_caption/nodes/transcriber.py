@@ -46,12 +46,12 @@ def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
 
     segments: list[Segment] = [
         {
+            "id": i,
             "text": s.text.strip(),
             "start": round(s.start, 3),
             "end": round(s.end, 3),
         }
-        for s in raw_segments
-        if s.text.strip()
+        for i, s in enumerate(s for s in raw_segments if s.text.strip())
     ]
 
     log.info("Transcription complete — %d segment(s)", len(segments))

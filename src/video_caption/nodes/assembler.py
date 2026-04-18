@@ -12,6 +12,9 @@ log = get_logger("video_caption.assembler")
 def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
     before = len(state["raw_segments"])
     segments = _deduplicate(state["raw_segments"])
+    # Reassign sequential ids after dedup so ids remain contiguous
+    for i, seg in enumerate(segments):
+        seg["id"] = i
     after = len(segments)
 
     if before != after:

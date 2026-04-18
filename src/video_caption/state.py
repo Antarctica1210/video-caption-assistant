@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 
 class AudioChunk(TypedDict):
@@ -9,12 +9,14 @@ class AudioChunk(TypedDict):
 
 
 class Segment(TypedDict):
+    id: NotRequired[int]  # sequential index; assigned in transcriber, reassigned after dedup
     text: str
     start: float
     end: float
 
 
 class BilingualSegment(TypedDict):
+    id: NotRequired[int]
     original: str
     translated: str
     start: float
