@@ -10,6 +10,31 @@ device = "cuda"         # cpu | cuda
 compute_type = "float16" # int8 | float16 | float32
 download_root = "./models/faster-whisper"
 
+# no_speech_threshold — probability (0.0–1.0) that a segment is silence.
+#   Whisper skips any segment whose silence score is ABOVE this number.
+#   0.6 (default) = only keep segments that are clearly speech.
+#   Lower → more greedy: 0.3 keeps segments even if Whisper is unsure whether
+#   they contain speech. Useful when quiet or accented speech gets dropped.
+no_speech_threshold = 0.45
+
+# log_prob_threshold — average log-probability (negative number) of the
+#   recognised tokens in a segment. More negative = less confident.
+#   Whisper discards segments whose score is BELOW this number.
+#   -1.0 (default) = discard very uncertain segments.
+#   Lower → more greedy: -2.0 keeps low-confidence segments instead of
+#   dropping them. Useful when Whisper silently skips mumbled speech.
+log_prob_threshold = -1.0
+
+# beam_size — number of hypotheses Whisper keeps at each decoding step.
+#   Higher = more accurate but slower. 5 is the default.
+beam_size = 5
+
+# condition_on_previous_text — feed each 30s window's output as context for
+#   the next window. true = better continuity between sentences.
+#   If transcription stops early (last N minutes missing), set this to false —
+#   a hallucination loop in one window can make Whisper think it's done.
+condition_on_previous_text = true
+
 [minio]
 endpoint = "localhost:9000"
 secure = false

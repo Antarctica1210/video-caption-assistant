@@ -31,6 +31,10 @@ class WhisperConfig:
     device: str
     compute_type: str
     download_root: str
+    no_speech_threshold: float
+    log_prob_threshold: float
+    beam_size: int
+    condition_on_previous_text: bool
 
 
 @dataclass
@@ -77,6 +81,10 @@ def load_config(path: str = "config.toml") -> AppConfig:
         whisper=WhisperConfig(
             model_size=os.getenv("WHISPER_MODEL_SIZE", w.get("model_size", "medium")),
             download_root=os.getenv("WHISPER_DOWNLOAD_ROOT", w.get("download_root", "./models/faster-whisper")),
+            no_speech_threshold=w.get("no_speech_threshold", 0.6),
+            log_prob_threshold=w.get("log_prob_threshold", -1.0),
+            beam_size=w.get("beam_size", 5),
+            condition_on_previous_text=w.get("condition_on_previous_text", True),
             **_whisper_device_settings(),
         ),
         chunk_duration=p.get("chunk_duration", 300),
