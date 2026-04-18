@@ -37,7 +37,7 @@ condition_on_previous_text = true
 
 # fast_model_size — model used when --fast-mode flag is passed.
 #   Approx 4× faster than large-v3 with minimal quality loss for most content.
-fast_model_size = "deepdml/faster-whisper-large-v3-turbo-ct2"
+fast_model_size = "Systran/faster-whisper-large-v3-turbo"
 
 [minio]
 endpoint = "localhost:9000"

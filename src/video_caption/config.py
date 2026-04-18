@@ -86,7 +86,7 @@ def load_config(path: str = "config.toml") -> AppConfig:
             log_prob_threshold=w.get("log_prob_threshold", -1.0),
             beam_size=w.get("beam_size", 5),
             condition_on_previous_text=w.get("condition_on_previous_text", True),
-            fast_model_size=w.get("fast_model_size", "deepdml/faster-whisper-large-v3-turbo-ct2"),
+            fast_model_size=w.get("fast_model_size", "Systran/faster-whisper-large-v3-turbo"),
             **_whisper_device_settings(),
         ),
         chunk_duration=p.get("chunk_duration", 300),
