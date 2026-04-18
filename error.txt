@@ -1,103 +1,17 @@
-╭─────────────────────────────────────────────────────────────── Traceback (most recent call last) ────────────────────────────────────────────────────────────────╮
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/main.py:48 in run                                                                         │
-│                                                                                                                                                                  │
-│    45 │   # --- Phase 1: Transcription ---                                                                                                                       │
-│    46 │   log.info("Phase 1 — Transcription: video=%r", video_key)                                                                                               │
-│    47 │   typer.echo("Phase 1: Transcribing...")                                                                                                                 │
-│ ❱  48 │   t_result = build_transcription_graph(cfg).invoke(CaptionState(                                                                                         │
-│    49 │   │   video_key=video_key,                                                                                                                               │
-│    50 │   │   audio_chunks=[],                                                                                                                                   │
-│    51 │   │   raw_segments=[],                                                                                                                                   │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py:3309 in invoke                │
-│                                                                                                                                                                  │
-│   3306 │   │   │   │   │   chunks.append(chunk)                                                                                                                  │
-│   3307 │   │   else:                                                                                                                                             │
-│   3308 │   │   │   # v1: collect interrupts from updates stream                                                                                                  │
-│ ❱ 3309 │   │   │   for chunk in self.stream(                                                                                                                     │
-│   3310 │   │   │   │   input,                                                                                                                                    │
-│   3311 │   │   │   │   config,                                                                                                                                   │
-│   3312 │   │   │   │   context=context,                                                                                                                          │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py:2736 in stream                │
-│                                                                                                                                                                  │
-│   2733 │   │   │   │   while loop.tick():                                                                                                                        │
-│   2734 │   │   │   │   │   for task in loop.match_cached_writes():                                                                                               │
-│   2735 │   │   │   │   │   │   loop.output_writes(task.id, task.writes, cached=True)                                                                             │
-│ ❱ 2736 │   │   │   │   │   for _ in runner.tick(                                                                                                                 │
-│   2737 │   │   │   │   │   │   [t for t in loop.tasks.values() if not t.writes],                                                                                 │
-│   2738 │   │   │   │   │   │   timeout=self.step_timeout,                                                                                                        │
-│   2739 │   │   │   │   │   │   get_waiter=get_waiter,                                                                                                            │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py:167 in tick                │
-│                                                                                                                                                                  │
-│   164 │   │   elif len(tasks) == 1 and timeout is None and get_waiter is None:                                                                                   │
-│   165 │   │   │   t = tasks[0]                                                                                                                                   │
-│   166 │   │   │   try:                                                                                                                                           │
-│ ❱ 167 │   │   │   │   run_with_retry(                                                                                                                            │
-│   168 │   │   │   │   │   t,                                                                                                                                     │
-│   169 │   │   │   │   │   retry_policy,                                                                                                                          │
-│   170 │   │   │   │   │   configurable={                                                                                                                         │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_retry.py:126 in run_with_retry       │
-│                                                                                                                                                                  │
-│   123 │   │   │   # clear any writes from previous attempts                                                                                                      │
-│   124 │   │   │   task.writes.clear()                                                                                                                            │
-│   125 │   │   │   # run the task                                                                                                                                 │
-│ ❱ 126 │   │   │   return task.proc.invoke(task.input, config)                                                                                                    │
-│   127 │   │   except ParentCommand as exc:                                                                                                                       │
-│   128 │   │   │   ns: str = config[CONF][CONFIG_KEY_CHECKPOINT_NS]                                                                                               │
-│   129 │   │   │   cmd = exc.args[0]                                                                                                                              │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py:656 in invoke         │
-│                                                                                                                                                                  │
-│   653 │   │   │   │   │   │   run = None                                                                                                                         │
-│   654 │   │   │   │   │   # run in context                                                                                                                       │
-│   655 │   │   │   │   │   with set_config_context(config, run) as context:                                                                                       │
-│ ❱ 656 │   │   │   │   │   │   input = context.run(step.invoke, input, config, **kwargs)                                                                          │
-│   657 │   │   │   │   else:                                                                                                                                      │
-│   658 │   │   │   │   │   input = step.invoke(input, config)                                                                                                     │
-│   659 │   │   # finish the root run                                                                                                                              │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py:400 in invoke         │
-│                                                                                                                                                                  │
-│   397 │   │   │   else:                                                                                                                                          │
-│   398 │   │   │   │   run_manager.on_chain_end(ret)                                                                                                              │
-│   399 │   │   else:                                                                                                                                              │
-│ ❱ 400 │   │   │   ret = self.func(*args, **kwargs)                                                                                                               │
-│   401 │   │   if self.recurse and isinstance(ret, Runnable):                                                                                                     │
-│   402 │   │   │   return ret.invoke(input, config)                                                                                                               │
-│   403 │   │   return ret                                                                                                                                         │
-│                                                                                                                                                                  │
-│ /home/wilson_wang/work_space/caption-assistant/video-caption-assistant/src/video_caption/nodes/assembler.py:36 in merge_and_save                                 │
-│                                                                                                                                                                  │
-│   33 │   with csv_path.open("w", newline="", encoding="utf-8") as f:                                                                                             │
-│   34 │   │   writer = csv.DictWriter(f, fieldnames=["start", "end", "text"])                                                                                     │
-│   35 │   │   writer.writeheader()                                                                                                                                │
-│ ❱ 36 │   │   writer.writerows(segments)                                                                                                                          │
-│   37 │   log.info("Saved transcript CSV  → %s", csv_path)                                                                                                        │
-│   38 │                                                                                                                                                           │
-│   39 │   return {                                                                                                                                                │
-│                                                                                                                                                                  │
-│ /usr/lib/python3.12/csv.py:167 in writerows                                                                                                                      │
-│                                                                                                                                                                  │
-│   164 │   │   return self.writer.writerow(self._dict_to_list(rowdict))                                                                                           │
-│   165 │                                                                                                                                                          │
-│   166 │   def writerows(self, rowdicts):                                                                                                                         │
-│ ❱ 167 │   │   return self.writer.writerows(map(self._dict_to_list, rowdicts))                                                                                    │
-│   168 │                                                                                                                                                          │
-│   169 │   __class_getitem__ = classmethod(types.GenericAlias)                                                                                                    │
-│   170                                                                                                                                                            │
-│                                                                                                                                                                  │
-│ /usr/lib/python3.12/csv.py:159 in _dict_to_list                                                                                                                  │
-│                                                                                                                                                                  │
-│   156 │   │   if self.extrasaction == "raise":                                                                                                                   │
-│   157 │   │   │   wrong_fields = rowdict.keys() - self.fieldnames                                                                                                │
-│   158 │   │   │   if wrong_fields:                                                                                                                               │
-│ ❱ 159 │   │   │   │   raise ValueError("dict contains fields not in fieldnames: "                                                                                │
-│   160 │   │   │   │   │   │   │   │    + ", ".join([repr(x) for x in wrong_fields]))                                                                             │
-│   161 │   │   return (rowdict.get(key, self.restval) for key in self.fieldnames)                                                                                 │
-│   162                                                                                                                                                            │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-ValueError: dict contains fields not in fieldnames: 'id'
-[NOTE] During task with name 'merge_and_save' and id '9d8262c4-7eb8-5d44-0e46-6374e03ab9f0'
+2026-04-18 20:52:15 [WARNING] video_caption.translator — translate_batch_json error (strict=True): 'list' object has no attribute 'strip'
+2026-04-18 20:52:15 [WARNING] video_caption.translator — Batch attempt 2 failed — falling back to per-item
+2026-04-18 20:52:15 [DEBUG] video_caption.lm_studio — LLM cache hit: model=google/gemma-4-26b-a4b json_mode=False
+[{'type': 'text', 'text': '{correct_transalted}', 'annotations': [], 'id': 'msg_72f0p4lxgjqf4b846sg73v'}]
+2026-04-18 20:52:16 [ERROR] video_caption.translator — Per-item fallback failed for id=27: 0 — keeping original
+2026-04-18 20:52:16 [DEBUG] video_caption.lm_studio — LLM cache hit: model=google/gemma-4-26b-a4b json_mode=False
+[{'type': 'text', 'text': '{correct_transalted}', 'annotations': [], 'id': 'msg_l7jx8gywwndc7ft10lv3c'}]
+2026-04-18 20:52:16 [ERROR] video_caption.translator — Per-item fallback failed for id=33: 0 — keeping original
+2026-04-18 20:52:16 [DEBUG] video_caption.lm_studio — LLM cache hit: model=google/gemma-4-26b-a4b json_mode=False
+[{'type': 'text', 'text': '{correct_transalted}', 'annotations': [], 'id': 'msg_8hzeibn2w50fluu7yaa5cm'}]
+2026-04-18 20:52:17 [ERROR] video_caption.translator — Per-item fallback failed for id=31: 0 — keeping original
+2026-04-18 20:52:17 [DEBUG] video_caption.lm_studio — LLM cache hit: model=google/gemma-4-26b-a4b json_mode=False
+[{'type': 'text', 'text': '{correct_transalted}', 'annotations': [], 'id': 'msg_5mt41dnok33l7x6syzmmo'}]
+2026-04-18 20:52:18 [ERROR] video_caption.translator — Per-item fallback failed for id=28: 0 — keeping original
+2026-04-18 20:52:18 [DEBUG] video_caption.lm_studio — LLM cache hit: model=google/gemma-4-26b-a4b json_mode=False
+[{'type': 'text', 'text': '{correct_transalted}', 'annotations': [], 'id': 'msg_03mb2l33dpyj3o6poru602d'}]
+2026-04-18 20:52:18 [ERROR] video_caption.translator — Per-item fallback failed for id=34: 0 — keeping original
