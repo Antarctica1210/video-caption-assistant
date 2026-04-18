@@ -118,9 +118,16 @@ class LMStudioClient:
             try:
                 response = llm.invoke(messages)
                 content = response.content
-                if content:
-                    print(content)
-                    return content[-1]
+                text: str | None = None
+                if isinstance(content, list):
+                    text = next(
+                        (b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"),
+                        "",
+                    ).strip() or None
+                elif content:
+                    text = str(content).strip() or None
+                if text:
+                    return [{"text": text}]
                 # Qwen3 thinking still active — content is empty, answer leaked into reasoning_content
                 reasoning = response.additional_kwargs.get("reasoning_content", "").strip()
                 if reasoning:
@@ -180,7 +187,14 @@ class LMStudioClient:
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = llm.invoke(messages)
-                content = response.content.strip()
+                raw = response.content
+                if isinstance(raw, list):
+                    content = next(
+                        (b.get("text", "") for b in raw if isinstance(b, dict) and b.get("type") == "text"),
+                        "",
+                    ).strip()
+                else:
+                    content = (raw or "").strip()
                 if not content:
                     content = response.additional_kwargs.get("reasoning_content", "").strip()
                 if not content:
