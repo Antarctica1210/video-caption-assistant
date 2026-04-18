@@ -33,6 +33,7 @@ def translate_segments(state: CaptionState, _app_config: AppConfig, lm: LMStudio
     def _run_batch(batch: list[Segment]) -> list[tuple[int, str]]:
         items = [{"id": seg["id"], "text": seg["text"]} for seg in batch]
         translated = _translate_batch(lm, items, target_lang)
+        print(translated)
         return list(translated.items())
 
     try:
