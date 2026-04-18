@@ -17,4 +17,4 @@ def translate_title(state: CaptionState, lm: LMStudioClient) -> dict:
     translated = lm.translate(raw_title, state["target_lang"]).get("text", "").strip()
     combined = f"{raw_title} | {translated}"
     log.info("Title result: %r", combined)
-    return {"translated_title": combined}
+    return {"translated_title": translated}
