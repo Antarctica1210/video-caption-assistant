@@ -27,6 +27,7 @@ class CaptionState(TypedDict, total=False):
     # --- inputs (required at invocation) ---
     video_key: str          # MinIO object key inside video_input bucket
     target_lang: str        # e.g. "zh", "es", "fr"
+    source_lang: str | None # hint to Whisper (e.g. "ja", "en"); None = auto-detect
     output_format: str      # "srt" | "ass" | "both"
     title: str | None       # optional video title
 

@@ -23,6 +23,7 @@ app = typer.Typer(help="Video caption assistant — transcribe, translate, and e
 @app.command()
 def run(
     lang: str = typer.Option("zh", "--lang", "-l", help="Target language code (e.g. zh, en, es, fr, ja)"),
+    source: str | None = typer.Option(None, "--source", "-s", help="Source audio language hint for Whisper (e.g. ja, en, zh)"),
     fmt: str = typer.Option("both", "--format", "-f", help="Output format: srt | ass | both"),
     title: str | None = typer.Option(None, "--title", "-t", help="Video title to translate and prepend"),
     config_path: str = typer.Option("config.toml", "--config", "-c", help="Path to config.toml"),
@@ -47,6 +48,7 @@ def run(
     typer.echo("Phase 1: Transcribing...")
     t_result = build_transcription_graph(cfg).invoke(CaptionState(
         video_key=video_key,
+        source_lang=source,
         audio_chunks=[],
         raw_segments=[],
         output_keys=[],

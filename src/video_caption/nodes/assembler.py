@@ -31,7 +31,7 @@ def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
     log.info("Saved transcript JSON → %s", json_path)
 
     with csv_path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["start", "end", "text"])
+        writer = csv.DictWriter(f, fieldnames=["id", "start", "end", "text"])
         writer.writeheader()
         writer.writerows(segments)
     log.info("Saved transcript CSV  → %s", csv_path)

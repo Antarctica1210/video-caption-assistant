@@ -41,7 +41,12 @@ def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
     # Transcribe the full WAV in one pass — no chunking, no overlap, no duplicate
     # segments at boundaries. faster-whisper streams internally so VRAM usage is
     # bounded regardless of audio length.
-    raw_segments, info = model.transcribe(audio_path, word_timestamps=True)
+    source_lang = state.get("source_lang") or None
+    transcribe_kwargs: dict = {"word_timestamps": True}
+    if source_lang:
+        transcribe_kwargs["language"] = source_lang
+        log.info("Source language hint: %s", source_lang)
+    raw_segments, info = model.transcribe(audio_path, **transcribe_kwargs)
     log.info("Detected language: %s (%.0f%% confidence)", info.language, info.language_probability * 100)
 
     segments: list[Segment] = [
