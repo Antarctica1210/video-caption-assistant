@@ -1,0 +1,22 @@
+[lm_studio]
+base_url = "http://192.168.50.91:1234/v1"
+model = "google/gemma-4-26b-a4b"
+timeout = 300
+max_retries = 3
+
+[whisper]
+model_size = "large-v3" # tiny | base | small | medium | large-v3
+device = "cuda"         # cpu | cuda
+compute_type = "float16" # int8 | float16 | float32
+download_root = "./models/faster-whisper"
+
+[minio]
+endpoint = "localhost:9000"
+secure = false
+input_bucket = "video-input"
+output_bucket = "video-output"
+
+[pipeline]
+chunk_duration = 300    # seconds per audio chunk
+chunk_overlap = 5       # overlap between chunks in seconds
+temp_dir = "./tmp/video-caption"
