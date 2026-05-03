@@ -5,7 +5,7 @@ from langgraph.graph import END, StateGraph
 from .clients.lm_studio import LMStudioClient
 from .clients.minio_client import MinIOClient
 from .config import AppConfig
-from .nodes import assembler, check_cache, extractor, load_transcript, translator, uploader, validator
+from .nodes import assembler, check_cache, extractor, load_transcript, normalizer, translator, uploader, validator
 from .nodes import title as title_node
 from .nodes.exporters import ass, srt
 from .nodes.transcriber import transcribe_chunks
@@ -60,16 +60,18 @@ def build_translation_graph(app_config: AppConfig):
 
     g = StateGraph(CaptionState)
 
-    g.add_node("load_transcript",   partial(load_transcript, app_config=app_config))
-    g.add_node("translate_title",   partial(title_node.translate_title, lm=lm))
-    g.add_node("translate_segments",partial(translator.translate_segments, _app_config=app_config, lm=lm))
-    g.add_node("validate_timeline", validator.validate_timeline)
-    g.add_node("export_srt",        partial(srt.export_srt, app_config=app_config))
-    g.add_node("export_ass",        partial(ass.export_ass, app_config=app_config))
-    g.add_node("upload_outputs",    partial(uploader.upload_outputs, app_config=app_config, minio=minio))
+    g.add_node("load_transcript",    partial(load_transcript, app_config=app_config))
+    g.add_node("normalize_segments", normalizer.normalize_segments)
+    g.add_node("translate_title",    partial(title_node.translate_title, lm=lm))
+    g.add_node("translate_segments", partial(translator.translate_segments, _app_config=app_config, lm=lm))
+    g.add_node("validate_timeline",  validator.validate_timeline)
+    g.add_node("export_srt",         partial(srt.export_srt, app_config=app_config))
+    g.add_node("export_ass",         partial(ass.export_ass, app_config=app_config))
+    g.add_node("upload_outputs",     partial(uploader.upload_outputs, app_config=app_config, minio=minio))
 
     g.set_entry_point("load_transcript")
-    g.add_edge("load_transcript",    "translate_title")
+    g.add_edge("load_transcript",    "normalize_segments")
+    g.add_edge("normalize_segments", "translate_title")
     g.add_edge("translate_title",    "translate_segments")
     g.add_edge("translate_segments", "validate_timeline")
     g.add_edge("validate_timeline",  "export_srt")

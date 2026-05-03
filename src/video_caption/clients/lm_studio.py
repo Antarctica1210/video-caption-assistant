@@ -1,3 +1,5 @@
+import json
+import re
 import time
 from typing import Optional
 
@@ -89,7 +91,7 @@ class LMStudioClient:
         except Exception:
             return False
 
-    def translate(self, text: str, target_lang: str, system_prompt: Optional[str] = None) -> list[dict]:
+    def translate(self, text: str, target_lang: str, system_prompt: Optional[str] = None) -> str:
         # system = system_prompt or (
         #     f"You are a professional subtitle translator. "
         #     f"Translate the following subtitle line to {target_lang}. "
@@ -116,14 +118,21 @@ class LMStudioClient:
             try:
                 response = llm.invoke(messages)
                 content = response.content
-                if content:
-                    print(content)
-                    return content[-1]
+                text: str | None = None
+                if isinstance(content, list):
+                    text = next(
+                        (b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"),
+                        "",
+                    ).strip() or None
+                elif content:
+                    text = str(content).strip() or None
+                if text:
+                    return text
                 # Qwen3 thinking still active — content is empty, answer leaked into reasoning_content
                 reasoning = response.additional_kwargs.get("reasoning_content", "").strip()
                 if reasoning:
                     log.warning("content empty — extracting from reasoning_content (thinking not disabled)")
-                    return [{"text": reasoning}]
+                    return reasoning
                 raise ValueError("LM Studio returned empty content and no reasoning_content")
             except (openai.APITimeoutError, httpx.TimeoutException) as e:
                 last_exc = e
@@ -145,3 +154,81 @@ class LMStudioClient:
 
         log.error("LM Studio failed after %d attempts: %s", self.max_retries, last_exc)
         raise RuntimeError(f"LM Studio request failed after {self.max_retries} attempts") from last_exc
+
+    def translate_batch_json(
+        self,
+        items: list[dict],
+        target_lang: str,
+        strict: bool = False,
+    ) -> list[dict]:
+        """Translate a list of {id, text} dicts. Returns [{id, translation}].
+        Raises ValueError if the response cannot be parsed or validated."""
+        batch_json = json.dumps(items, ensure_ascii=False)
+        extra = "\nTranslate every item. Do not omit any." if strict else ""
+        system = (
+            f"You are a professional subtitle translator.\n"
+            f"Translate each item into {target_lang}.\n"
+            "Rules:\n"
+            "- Translate faithfully. Do not omit, add, or rewrite content.\n"
+            "- Keep each item's id unchanged.\n"
+            "- Return exactly one translation per item.\n"
+            f"- Output a JSON array only. No extra text.{extra}\n"
+        )
+        user = (
+            f"Translate the following subtitle items into {target_lang}.\n\n"
+            "Return JSON in this exact format:\n"
+            '[{"id": 1, "translation": "..."}]\n\n'
+            f"Input:\n{batch_json}"
+        )
+        messages = [SystemMessage(content=system), HumanMessage(content=user)]
+        llm = self._llm()
+
+        last_exc: Exception | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = llm.invoke(messages)
+                raw = response.content
+                if isinstance(raw, list):
+                    content = next(
+                        (b.get("text", "") for b in raw if isinstance(b, dict) and b.get("type") == "text"),
+                        "",
+                    ).strip()
+                else:
+                    content = (raw or "").strip()
+                if not content:
+                    content = response.additional_kwargs.get("reasoning_content", "").strip()
+                if not content:
+                    raise ValueError("Empty response")
+                parsed = json.loads(_extract_json_array(content))
+                if not isinstance(parsed, list):
+                    raise ValueError(f"Expected JSON array, got {type(parsed).__name__}")
+                return parsed
+            except (openai.APITimeoutError, httpx.TimeoutException) as e:
+                last_exc = e
+                log.warning("Batch timeout attempt %d/%d — retrying in %ds", attempt, self.max_retries, attempt * 5)
+                time.sleep(attempt * 5)
+            except (openai.APIConnectionError, httpx.ConnectError) as e:
+                last_exc = e
+                log.warning("Batch connection error attempt %d/%d — retrying in %ds", attempt, self.max_retries, attempt * 5)
+                time.sleep(attempt * 5)
+            except (ValueError, json.JSONDecodeError) as e:
+                last_exc = e
+                log.warning("Batch JSON parse error attempt %d/%d: %s — raw: %r", attempt, self.max_retries, e, content[:200])
+                if attempt < self.max_retries:
+                    time.sleep(2)
+            except openai.APIStatusError as e:
+                log.error("LM Studio API error (HTTP %d): %s", e.status_code, e.message)
+                raise
+
+        raise ValueError(f"translate_batch_json failed after {self.max_retries} attempts: {last_exc}") from last_exc
+
+
+def _extract_json_array(text: str) -> str:
+    """Strip markdown fences and extract the outermost [...] array."""
+    text = re.sub(r'```(?:json)?\s*', '', text)
+    text = re.sub(r'```', '', text).strip()
+    start = text.find('[')
+    end = text.rfind(']')
+    if start != -1 and end > start:
+        return text[start:end + 1]
+    return text

@@ -23,6 +23,8 @@ app = typer.Typer(help="Video caption assistant — transcribe, translate, and e
 @app.command()
 def run(
     lang: str = typer.Option("zh", "--lang", "-l", help="Target language code (e.g. zh, en, es, fr, ja)"),
+    source: str | None = typer.Option(None, "--source", "-s", help="Source audio language hint for Whisper (e.g. ja, en, zh)"),
+    fast_mode: bool = typer.Option(False, "--fast-mode", help="Use fast_model_size (whisper-large-v3-turbo) for quicker transcription"),
     fmt: str = typer.Option("both", "--format", "-f", help="Output format: srt | ass | both"),
     title: str | None = typer.Option(None, "--title", "-t", help="Video title to translate and prepend"),
     config_path: str = typer.Option("config.toml", "--config", "-c", help="Path to config.toml"),
@@ -47,6 +49,8 @@ def run(
     typer.echo("Phase 1: Transcribing...")
     t_result = build_transcription_graph(cfg).invoke(CaptionState(
         video_key=video_key,
+        source_lang=source,
+        fast_mode=fast_mode,
         audio_chunks=[],
         raw_segments=[],
         output_keys=[],
@@ -65,8 +69,7 @@ def run(
         output_format=fmt,
         title=title,
         local_video_path=t_result["local_video_path"],
-        transcript_json_path=t_result["transcript_json_path"],
-        transcript_csv_path=t_result.get("transcript_csv_path"),
+        transcript_jsonl_path=t_result["transcript_jsonl_path"],
         bilingual_segments=[],
         output_keys=[],
     ))

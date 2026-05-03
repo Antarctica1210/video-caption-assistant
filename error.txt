@@ -1,0 +1,8 @@
+2026-04-19 09:23:01 [DEBUG] video_caption.validator — High CPS 15.4 at 293.8s–294.0s: 'xxxx'
+2026-04-19 09:23:01 [DEBUG] video_caption.validator — High CPS 30.0 at 294.0s–294.1s: 'xxxx'
+2026-04-19 09:23:01 [DEBUG] video_caption.validator — High CPS 16.7 at 360.3s–360.8s: 'xxxx'
+2026-04-19 09:23:01 [DEBUG] video_caption.validator — High CPS 15.2 at 524.2s–525.3s: 'xxxx'
+2026-04-19 09:23:01 [DEBUG] video_caption.validator — High CPS 20.3 at 653.3s–653.9s: 'xxxx'
+2026-04-19 09:23:01 [WARNING] video_caption.validator — Clamped 9 segment(s) exceeding max duration (10.0s)
+2026-04-19 09:23:01 [WARNING] video_caption.validator — 5 segment(s) exceed 15 CPS — may be too fast to read
+2026-04-19 09:23:01 [INFO] video_caption.validator — Timeline validated — 292 segment(s) OK

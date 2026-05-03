@@ -10,6 +10,42 @@ device = "cuda"         # cpu | cuda
 compute_type = "float16" # int8 | float16 | float32
 download_root = "./models/faster-whisper"
 
+# no_speech_threshold — probability (0.0–1.0) that a segment is silence.
+#   Whisper skips any segment whose silence score is ABOVE this number.
+#   0.6 (default) = only keep segments that are clearly speech.
+#   Lower → more greedy: 0.3 keeps segments even if Whisper is unsure whether
+#   they contain speech. Useful when quiet or accented speech gets dropped.
+no_speech_threshold = 0.3
+
+# log_prob_threshold — average log-probability (negative number) of the
+#   recognised tokens in a segment. More negative = less confident.
+#   Whisper discards segments whose score is BELOW this number.
+#   -1.0 (default) = discard very uncertain segments.
+#   Lower → more greedy: -2.0 keeps low-confidence segments instead of
+#   dropping them. Useful when Whisper silently skips mumbled speech.
+log_prob_threshold = -2.0
+
+# beam_size — number of hypotheses Whisper keeps at each decoding step.
+#   Higher = more accurate but slower. 5 is the default.
+beam_size = 5
+
+# condition_on_previous_text — feed each 30s window's output as context for
+#   the next window. true = better continuity between sentences.
+#   If transcription stops early (last N minutes missing), set this to false —
+#   a hallucination loop in one window can make Whisper think it's done.
+condition_on_previous_text = true
+
+# vad_filter — run Silero VAD before transcribing to detect speech regions.
+#   Whisper only processes segments VAD identifies as speech, skipping silence
+#   entirely. This prevents long silent gaps (music, pauses) from poisoning
+#   Whisper's context and causing speech after the gap to be missed.
+#   Recommended: true — especially for videos with long non-speech sections.
+vad_filter = true
+
+# fast_model_size — model used when --fast-mode flag is passed.
+#   Approx 4× faster than large-v3 with minimal quality loss for most content.
+fast_model_size = "deepdml/faster-whisper-large-v3-turbo-ct2"
+
 [minio]
 endpoint = "localhost:9000"
 secure = false
