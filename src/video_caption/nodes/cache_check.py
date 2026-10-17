@@ -1,16 +1,14 @@
 import json
 from pathlib import Path
 
-from ..config import AppConfig
 from ..logger import get_logger
 from ..state import CaptionState, Segment
 
 log = get_logger("video_caption.cache_check")
 
 
-def check_cache(state: CaptionState, app_config: AppConfig) -> dict:
-    stem = Path(state["video_key"]).stem
-    out_dir = Path(app_config.temp_dir) / stem / "output"
+def check_cache(state: CaptionState) -> dict:
+    out_dir = Path(state["work_dir"]) / "output"
     jsonl_path = out_dir / "transcript.jsonl"
 
     if jsonl_path.exists():
@@ -23,7 +21,6 @@ def check_cache(state: CaptionState, app_config: AppConfig) -> dict:
             "cache_hit": True,
             "raw_segments": segments,
             "transcript_jsonl_path": str(jsonl_path),
-            "local_video_path": str(Path(app_config.temp_dir) / stem / "input" / Path(state["video_key"]).name),
         }
 
     log.info("No cache found at %s — running full pipeline", out_dir)

@@ -16,13 +16,9 @@ class LMStudioConfig:
 
 
 @dataclass
-class MinIOConfig:
-    endpoint: str
-    access_key: str
-    secret_key: str
-    secure: bool
-    input_bucket: str
-    output_bucket: str
+class WebConfig:
+    host: str
+    port: int
 
 
 @dataclass
@@ -42,7 +38,7 @@ class WhisperConfig:
 @dataclass
 class AppConfig:
     lm_studio: LMStudioConfig
-    minio: MinIOConfig
+    web: WebConfig
     whisper: WhisperConfig
     chunk_duration: int
     chunk_overlap: int
@@ -60,7 +56,7 @@ def load_config(path: str = "config.toml") -> AppConfig:
         data = tomllib.load(f)
 
     ls = data["lm_studio"]
-    m = data["minio"]
+    web = data.get("web", {})
     w = data["whisper"]
     p = data.get("pipeline", {})
 
@@ -72,13 +68,9 @@ def load_config(path: str = "config.toml") -> AppConfig:
             timeout=ls.get("timeout", 60),
             max_retries=ls.get("max_retries", 3),
         ),
-        minio=MinIOConfig(
-            endpoint=os.getenv("MINIO_ENDPOINT", m["endpoint"]),
-            access_key=os.getenv("MINIO_ACCESS_KEY", "minioadmin"),
-            secret_key=os.getenv("MINIO_SECRET_KEY", "minioadmin"),
-            secure=m.get("secure", False),
-            input_bucket=m.get("input_bucket", "video-input"),
-            output_bucket=m.get("output_bucket", "video-output"),
+        web=WebConfig(
+            host=os.getenv("WEB_HOST", web.get("host", "127.0.0.1")),
+            port=int(os.getenv("WEB_PORT", web.get("port", 8000))),
         ),
         whisper=WhisperConfig(
             model_size=os.getenv("WHISPER_MODEL_SIZE", w.get("model_size", "medium")),

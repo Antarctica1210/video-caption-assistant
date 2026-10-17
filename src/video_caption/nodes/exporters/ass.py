@@ -1,8 +1,10 @@
 from pathlib import Path
 
-from ...config import AppConfig
+from ...logger import get_logger
 from ...state import CaptionState
 from ..title import TITLE_END, TITLE_START
+
+log = get_logger("video_caption.export_ass")
 
 _HEADER = """\
 [Script Info]
@@ -20,10 +22,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 
 
-def export_ass(state: CaptionState, app_config: AppConfig) -> dict:
-    stem = Path(state["local_video_path"]).stem
-    out_dir = Path(app_config.temp_dir) / stem / "output"
-    ass_path = out_dir / f"{stem}.ass"
+def export_ass(state: CaptionState) -> dict:
+    if state.get("output_format", "both") not in ("ass", "both"):
+        return {"ass_path": None}
+
+    # Captions go next to the source video so players pick them up automatically
+    video_path = Path(state["video_path"])
+    ass_path = video_path.with_suffix(".ass")
 
     events: list[str] = []
 
@@ -37,6 +42,7 @@ def export_ass(state: CaptionState, app_config: AppConfig) -> dict:
         events.append(f"Dialogue: 0,{s},{e},Translated,,0,0,0,,{seg['translated']}")
 
     ass_path.write_text(_HEADER + "\n".join(events) + "\n", encoding="utf-8")
+    log.info("Wrote %s", ass_path)
     return {"ass_path": str(ass_path)}
 
 

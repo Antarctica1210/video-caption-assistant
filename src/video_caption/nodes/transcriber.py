@@ -63,8 +63,7 @@ def transcribe_chunks(state: CaptionState, app_config: AppConfig) -> dict:
         app_config.whisper.vad_filter,
     )
 
-    stem = Path(state["local_video_path"]).stem
-    out_dir = Path(app_config.temp_dir) / stem / "output"
+    out_dir = Path(state["work_dir"]) / "output"
     out_dir.mkdir(parents=True, exist_ok=True)
     jsonl_path = out_dir / "transcript.jsonl"
 
