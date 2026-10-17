@@ -25,4 +25,4 @@ uv sync
 
 echo ""
 echo "Setup complete. Run the app with:"
-echo "  uv run main.py --lang zh"
+echo "  uv run main.py serve      # then open http://localhost:8000"

@@ -46,13 +46,16 @@ vad_filter = true
 #   Approx 4× faster than large-v3 with minimal quality loss for most content.
 fast_model_size = "deepdml/faster-whisper-large-v3-turbo-ct2"
 
-[minio]
-endpoint = "localhost:9000"
-secure = false
-input_bucket = "video-input"
-output_bucket = "video-output"
+[web]
+# 127.0.0.1 keeps the page private to this machine. On WSL2 the Windows
+# browser can still reach it at http://localhost:<port>.
+# Do not use 0.0.0.0 unless you trust your network — the page can list your folders.
+host = "127.0.0.1"
+port = 8000
 
 [pipeline]
 chunk_duration = 300    # seconds per audio chunk
 chunk_overlap = 5       # overlap between chunks in seconds
+# Intermediate files (audio, transcript, translation checkpoint) live here.
+# Final .srt/.ass files are written next to the source video.
 temp_dir = "./tmp/video-caption"

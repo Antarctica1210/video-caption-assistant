@@ -1,14 +1,13 @@
 import json
 from pathlib import Path
 
-from ..config import AppConfig
 from ..logger import get_logger
 from ..state import CaptionState, Segment
 
 log = get_logger("video_caption.assembler")
 
 
-def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
+def merge_and_save(state: CaptionState) -> dict:
     before = len(state["raw_segments"])
     segments = _deduplicate(state["raw_segments"])
     for i, seg in enumerate(segments):
@@ -18,8 +17,7 @@ def merge_and_save(state: CaptionState, app_config: AppConfig) -> dict:
     if before != after:
         log.info("Deduplicated segments: %d → %d", before, after)
 
-    stem = Path(state["local_video_path"]).stem
-    out_dir = Path(app_config.temp_dir) / stem / "output"
+    out_dir = Path(state["work_dir"]) / "output"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     jsonl_path = out_dir / "transcript.jsonl"

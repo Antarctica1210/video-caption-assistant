@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video Caption Assistant</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #667085; --border: #e3e6eb;
+    --accent: #2f6fde; --accent-text: #ffffff; --hover: #eef3fc; --ok: #1a7f4b; --warn: #a15c00; --err: #c0362c;
+    --mono-bg: #0f1420; --mono-text: #d6deeb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --panel: #1a1f27; --text: #e6e9ef; --muted: #98a2b3; --border: #2b323d;
+      --accent: #5b8ff0; --accent-text: #0b0f16; --hover: #222a36; --ok: #4cc38a; --warn: #f0b04f; --err: #f07167;
+      --mono-bg: #0b0e14;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  section { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  section.disabled { opacity: .5; pointer-events: none; }
+  h2 { font-size: 16px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .step { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+          background: var(--accent); color: var(--accent-text); font-size: 12px; font-weight: 600; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row > input { flex: 1 1 280px; }
+  input[type=text], select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+          border-radius: 6px; padding: 7px 10px; min-width: 0; }
+  button { font: inherit; border: 1px solid var(--border); background: var(--panel); color: var(--text);
+           border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+  button:hover { background: var(--hover); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+  .browser { margin-top: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .bar { display: flex; gap: 6px; align-items: center; padding: 8px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .bar .where { flex: 1; font-family: ui-monospace, Consolas, monospace; font-size: 13px; overflow-wrap: anywhere; }
+  .bar button { padding: 4px 10px; font-size: 13px; }
+  ul.list { list-style: none; margin: 0; padding: 4px 0; max-height: 340px; overflow-y: auto; }
+  ul.list li { display: flex; align-items: center; gap: 10px; padding: 6px 12px; cursor: pointer; }
+  ul.list li:hover { background: var(--hover); }
+  ul.list li.selected { background: var(--hover); box-shadow: inset 3px 0 var(--accent); }
+  ul.list li .name { flex: 1; overflow-wrap: anywhere; }
+  ul.list li .size { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  ul.list li.empty { color: var(--muted); cursor: default; }
+  ul.list svg { flex: none; width: 18px; height: 18px; }
+  .confirm { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 8px; }
+  .confirm dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0 0 10px; }
+  .confirm dt { color: var(--muted); }
+  .confirm dd { margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 13px; overflow-wrap: anywhere; }
+  .warn { color: var(--warn); }
+  .err { color: var(--err); }
+  .ok { color: var(--ok); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  label.check { display: flex; align-items: center; gap: 8px; align-self: end; padding-bottom: 8px; }
+  .actions { margin-top: 16px; display: flex; gap: 10px; align-items: center; }
+  .status { font-weight: 600; }
+  pre.log { background: var(--mono-bg); color: var(--mono-text); border-radius: 8px; padding: 10px 12px; margin: 12px 0 0;
+            max-height: 320px; overflow: auto; font-size: 12px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .outputs { margin: 12px 0 0; padding-left: 18px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; overflow-wrap: anywhere; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Video Caption Assistant</h1>
+  <p class="sub">Pick a video on this computer. Bilingual captions are saved in the same folder as the video.</p>
+
+  <section id="pick">
+    <h2><span class="step">1</span>Choose a video</h2>
+    <div class="row">
+      <input id="pathInput" type="text" placeholder="Paste a video path, e.g. C:\Users\me\Videos\talk.mp4" spellcheck="false">
+      <button id="checkBtn">Check path</button>
+    </div>
+    <p class="hint">Or find it below. Tip: in Windows Explorer, Shift + right-click a file and choose “Copy as path”.</p>
+
+    <div class="browser">
+      <div class="bar">
+        <button id="rootBtn" title="Show drives">Computer</button>
+        <button id="upBtn" title="Parent folder">Up</button>
+        <span class="where" id="where">…</span>
+      </div>
+      <ul class="list" id="list"></ul>
+    </div>
+    <p id="pickError" class="hint err hidden"></p>
+
+    <div id="confirmBox" class="confirm hidden">
+      <dl>
+        <dt>Video</dt><dd id="cVideo"></dd>
+        <dt>Captions saved to</dt><dd id="cOut"></dd>
+      </dl>
+      <p id="cExisting" class="hint warn hidden"></p>
+      <div class="row">
+        <button id="confirmBtn" class="primary">Use this video</button>
+        <button id="cancelBtn">Choose another</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="options" class="disabled">
+    <h2><span class="step">2</span>Caption options</h2>
+    <p class="hint" style="margin:-4px 0 12px">Selected: <strong id="selected">none</strong></p>
+    <div class="grid">
+      <label class="field">Translate to
+        <input id="lang" type="text" value="zh" list="langs" spellcheck="false">
+      </label>
+      <label class="field">Spoken language (optional)
+        <input id="source" type="text" placeholder="auto-detect" list="langs" spellcheck="false">
+      </label>
+      <label class="field">Format
+        <select id="format">
+          <option value="both">SRT + ASS</option>
+          <option value="srt">SRT only</option>
+          <option value="ass">ASS only</option>
+        </select>
+      </label>
+      <label class="field">Title (optional)
+        <input id="title" type="text" placeholder="defaults to file name">
+      </label>
+      <label class="check"><input id="fast" type="checkbox"> Fast mode (turbo model)</label>
+    </div>
+    <datalist id="langs">
+      <option value="zh">Chinese</option><option value="en">English</option><option value="ja">Japanese</option>
+      <option value="ko">Korean</option><option value="es">Spanish</option><option value="fr">French</option>
+      <option value="de">German</option><option value="pt">Portuguese</option><option value="ru">Russian</option>
+    </datalist>
+    <div class="actions">
+      <button id="startBtn" class="primary">Generate captions</button>
+    </div>
+  </section>
+
+  <section id="progress" class="hidden">
+    <h2><span class="step">3</span>Progress</h2>
+    <div>Status: <span id="status" class="status"></span></div>
+    <p id="jobError" class="err hidden"></p>
+    <div id="doneBox" class="hidden">
+      <p class="ok" style="margin:12px 0 0">Captions written:</p>
+      <ul class="outputs" id="outputs"></ul>
+    </div>
+    <pre class="log" id="log"></pre>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const ICON_DIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+const ICON_VID = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>';
+const STATUS_TEXT = { queued: 'Waiting to start…', transcribing: 'Step 1 of 2 — transcribing audio (this is the slow part)…',
+                      translating: 'Step 2 of 2 — translating and writing captions…', done: 'Finished', failed: 'Failed' };
+
+let current = null;     // folder listing currently shown
+let candidate = null;   // resolved video awaiting confirmation
+let confirmed = null;   // confirmed video
+
+function store(key, value) { try { localStorage.setItem(key, value); } catch {} }
+function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
+
+async function api(url, body) {
+  const res = await fetch(url, body === undefined ? {} : {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+  return data;
+}
+
+function showPickError(msg) { $('pickError').textContent = msg || ''; $('pickError').classList.toggle('hidden', !msg); }
+
+function fmtSize(bytes) {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0; while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++; }
+  return `${bytes.toFixed(i ? 1 : 0)} ${units[i]}`;
+}
+
+function li(html, onClick, cls = '') {
+  const el = document.createElement('li');
+  el.innerHTML = html; el.className = cls;
+  if (onClick) el.addEventListener('click', onClick);
+  return el;
+}
+function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+async function browse(path) {
+  showPickError('');
+  let data;
+  try { data = await api('/api/browse' + (path ? '?path=' + encodeURIComponent(path) : '')); }
+  catch (e) { showPickError(e.message); if (path) return browse(null); return; }
+  current = data;
+  if (data.path) store('lastFolder', data.path);
+  $('where').textContent = data.display;
+  $('upBtn').disabled = !data.parent;
+  const list = $('list'); list.replaceChildren();
+  for (const d of data.dirs) list.append(li(`${ICON_DIR}<span class="name">${esc(d.name)}</span>`, () => browse(d.path)));
+  for (const v of data.videos) {
+    const el = li(`${ICON_VID}<span class="name">${esc(v.name)}</span><span class="size">${fmtSize(v.size)}</span>`,
+                  () => resolve(v.path, el));
+    list.append(el);
+  }
+  if (!data.dirs.length && !data.videos.length) list.append(li('No folders or videos here.', null, 'empty'));
+}
+
+async function resolve(path, el) {
+  showPickError('');
+  document.querySelectorAll('#list li.selected').forEach((n) => n.classList.remove('selected'));
+  try { candidate = await api('/api/resolve', { path }); }
+  catch (e) { showPickError(e.message); $('confirmBox').classList.add('hidden'); return; }
+  if (el) el.classList.add('selected');
+  $('cVideo').textContent = candidate.display;
+  $('cOut').textContent = candidate.output_dir;
+  $('cExisting').textContent = candidate.existing.length
+    ? 'These files already exist and will be overwritten: ' + candidate.existing.join(', ') : '';
+  $('cExisting').classList.toggle('hidden', !candidate.existing.length);
+  $('confirmBox').classList.remove('hidden');
+  $('confirmBtn').focus();
+}
+
+function confirmVideo() {
+  confirmed = candidate;
+  $('selected').textContent = confirmed.display;
+  $('options').classList.remove('disabled');
+  $('confirmBox').classList.add('hidden');
+  $('options').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function start() {
+  if (!confirmed) return;
+  const body = {
+    video_path: confirmed.path,
+    lang: $('lang').value.trim() || 'zh',
+    source: $('source').value.trim() || null,
+    format: $('format').value,
+    title: $('title').value.trim() || null,
+    fast_mode: $('fast').checked,
+  };
+  $('startBtn').disabled = true;
+  try {
+    const { id } = await api('/api/jobs', body);
+    $('progress').classList.remove('hidden');
+    $('doneBox').classList.add('hidden'); $('jobError').classList.add('hidden'); $('log').textContent = '';
+    $('progress').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    poll(id);
+  } catch (e) { alert(e.message); $('startBtn').disabled = false; }
+}
+
+async function poll(id) {
+  let job;
+  try { job = await api('/api/jobs/' + id); }
+  catch { setTimeout(() => poll(id), 3000); return; }
+  $('status').textContent = STATUS_TEXT[job.status] || job.status;
+  $('status').className = 'status ' + (job.status === 'done' ? 'ok' : job.status === 'failed' ? 'err' : '');
+  const log = $('log'); const atBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 20;
+  log.textContent = job.logs.join('\n');
+  if (atBottom) log.scrollTop = log.scrollHeight;
+  if (job.status === 'done') {
+    $('outputs').replaceChildren(...job.outputs.map((p) => { const el = document.createElement('li'); el.textContent = p; return el; }));
+    $('doneBox').classList.remove('hidden');
+    $('startBtn').disabled = false;
+  } else if (job.status === 'failed') {
+    $('jobError').textContent = job.error; $('jobError').classList.remove('hidden');
+    $('startBtn').disabled = false;
+  } else {
+    setTimeout(() => poll(id), 1500);
+  }
+}
+
+$('rootBtn').addEventListener('click', () => browse(null));
+$('upBtn').addEventListener('click', () => current?.parent && browse(current.parent));
+async function checkPath() {
+  const p = $('pathInput').value.trim();
+  if (!p) return;
+  // A pasted folder opens in the browser; a pasted file goes straight to confirmation
+  try { await api('/api/browse?path=' + encodeURIComponent(p)); return browse(p); } catch {}
+  resolve(p);
+}
+$('checkBtn').addEventListener('click', checkPath);
+$('pathInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('checkBtn').click(); });
+$('confirmBtn').addEventListener('click', confirmVideo);
+$('cancelBtn').addEventListener('click', () => { $('confirmBox').classList.add('hidden'); candidate = null; });
+$('startBtn').addEventListener('click', start);
+
+browse(recall('lastFolder'));
+</script>
+</body>
+</html>

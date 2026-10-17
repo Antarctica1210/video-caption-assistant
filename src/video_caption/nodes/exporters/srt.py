@@ -1,14 +1,19 @@
 from pathlib import Path
 
-from ...config import AppConfig
+from ...logger import get_logger
 from ...state import CaptionState
 from ..title import TITLE_END, TITLE_START
 
+log = get_logger("video_caption.export_srt")
 
-def export_srt(state: CaptionState, app_config: AppConfig) -> dict:
-    stem = Path(state["local_video_path"]).stem
-    out_dir = Path(app_config.temp_dir) / stem / "output"
-    srt_path = out_dir / f"{stem}.srt"
+
+def export_srt(state: CaptionState) -> dict:
+    if state.get("output_format", "both") not in ("srt", "both"):
+        return {"srt_path": None}
+
+    # Captions go next to the source video so players pick them up automatically
+    video_path = Path(state["video_path"])
+    srt_path = video_path.with_suffix(".srt")
 
     blocks: list[str] = []
     idx = 1
@@ -22,6 +27,7 @@ def export_srt(state: CaptionState, app_config: AppConfig) -> dict:
         idx += 1
 
     srt_path.write_text("\n\n".join(blocks) + "\n", encoding="utf-8")
+    log.info("Wrote %s", srt_path)
     return {"srt_path": str(srt_path)}
 
 

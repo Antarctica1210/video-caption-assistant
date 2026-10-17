@@ -25,7 +25,8 @@ class BilingualSegment(TypedDict):
 
 class CaptionState(TypedDict, total=False):
     # --- inputs (required at invocation) ---
-    video_key: str          # MinIO object key inside video_input bucket
+    video_path: str         # absolute local path to the source video; captions are written next to it
+    work_dir: str           # temp folder for intermediates (audio, transcript, checkpoints)
     target_lang: str        # e.g. "zh", "es", "fr"
     source_lang: str | None # hint to Whisper (e.g. "ja", "en"); None = auto-detect
     fast_mode: bool         # True = use fast_model_size from config instead of model_size
@@ -33,7 +34,6 @@ class CaptionState(TypedDict, total=False):
     title: str | None       # optional video title
 
     # --- pipeline intermediates ---
-    local_video_path: str
     local_audio_path: str
     audio_chunks: list[AudioChunk]
     raw_segments: list[Segment]
@@ -49,5 +49,5 @@ class CaptionState(TypedDict, total=False):
     cache_hit: bool             # True if transcript already exists; skips extraction
 
     # --- final ---
-    output_keys: list[str]
+    output_paths: list[str]
     error: str | None
